@@ -1,0 +1,437 @@
+{
+  "name": "gbti-terminal-sessions",
+  "displayName": "Terminal Sessions",
+  "description": "Save terminal sessions as reusable profiles — shell, directory and startup commands — and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
+  "version": "0.2.0",
+  "publisher": "GBTI",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#232323",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gbti-network/vscode-terminal-sessions"
+  },
+  "bugs": {
+    "url": "https://github.com/gbti-network/vscode-terminal-sessions/issues"
+  },
+  "homepage": "https://gbti.network/products/vscode-terminal-sessions/",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "terminal",
+    "sessions",
+    "profiles",
+    "wsl",
+    "workspace",
+    "restore",
+    "layout",
+    "columns",
+    "shell",
+    "claude"
+  ],
+  "main": "./out/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "terminalSessions.enable",
+        "title": "Enable",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.disable",
+        "title": "Disable",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.toggle",
+        "title": "Show or Hide Column...",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.toggle.files",
+        "title": "Toggle Files Column",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.toggle.terminal",
+        "title": "Toggle Terminal Column",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.toggle.chat",
+        "title": "Toggle Chat Column",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.hideAll",
+        "title": "Hide All Columns",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.showAll",
+        "title": "Show All Columns",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.newTerminal",
+        "title": "New Terminal in Column",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.growColumn",
+        "title": "Grow Focused Column",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.shrinkColumn",
+        "title": "Shrink Focused Column",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.resetLayout",
+        "title": "Reset Layout",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.probeLayout",
+        "title": "Probe Layout (Diagnostics)",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.dumpSession",
+        "title": "Dump Terminal Session (Diagnostics)",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.saveInstanceProfile",
+        "title": "Save as Instance Profile",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.launchInstanceProfile",
+        "title": "Open Saved Instance Profile...",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.manageInstanceProfiles",
+        "title": "Manage Instance Profiles",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.profiles.new",
+        "title": "New Instance Profile",
+        "category": "Terminal Sessions",
+        "icon": "$(add)"
+      },
+      {
+        "command": "terminalSessions.profiles.refresh",
+        "title": "Refresh Profiles",
+        "category": "Terminal Sessions",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "terminalSessions.profiles.edit",
+        "title": "Edit Profile",
+        "category": "Terminal Sessions",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "terminalSessions.profiles.launch",
+        "title": "Open Profile",
+        "category": "Terminal Sessions",
+        "icon": "$(play)"
+      },
+      {
+        "command": "terminalSessions.profiles.delete",
+        "title": "Delete Profile",
+        "category": "Terminal Sessions",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "terminalSessions.restoreSession",
+        "title": "Restore Last Session",
+        "category": "Terminal Sessions"
+      },
+      {
+        "command": "terminalSessions.forgetSession",
+        "title": "Stop Restoring a Profile...",
+        "category": "Terminal Sessions"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "terminalSessions",
+          "title": "Terminal Sessions",
+          "icon": "media/terminal-sessions.svg"
+        }
+      ]
+    },
+    "views": {
+      "terminalSessions": [
+        {
+          "id": "terminalSessions.profiles",
+          "name": "Session Profiles",
+          "icon": "media/terminal-sessions.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "terminalSessions.profiles",
+        "contents": "No saved instance profiles yet.\n\nA profile is a named terminal recipe: which shell to open, where, and what to run once it is ready.\n\n[New Profile](command:terminalSessions.profiles.new)\n\nYou can also right-click a terminal tab and choose \"Save as Instance Profile\" to start from one you already have open."
+      }
+    ],
+    "menus": {
+      "terminal/title/context": [
+        {
+          "command": "terminalSessions.saveInstanceProfile",
+          "group": "terminalSessions@1"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "terminalSessions.saveInstanceProfile",
+          "group": "terminalSessions@1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "terminalSessions.profiles.new",
+          "when": "view == terminalSessions.profiles",
+          "group": "navigation@1"
+        },
+        {
+          "command": "terminalSessions.profiles.refresh",
+          "when": "view == terminalSessions.profiles",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "terminalSessions.profiles.launch",
+          "when": "view == terminalSessions.profiles && viewItem == terminalSessionProfile",
+          "group": "inline@1"
+        },
+        {
+          "command": "terminalSessions.profiles.edit",
+          "when": "view == terminalSessions.profiles && viewItem == terminalSessionProfile",
+          "group": "inline@2"
+        },
+        {
+          "command": "terminalSessions.profiles.delete",
+          "when": "view == terminalSessions.profiles && viewItem == terminalSessionProfile",
+          "group": "9_delete"
+        }
+      ]
+    },
+    "terminal": {
+      "profiles": [
+        {
+          "id": "terminalSessions.savedSession",
+          "title": "Terminal Sessions: Saved Session...",
+          "icon": "server"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "terminalSessions.toggle.files",
+        "key": "ctrl+alt+1",
+        "mac": "cmd+alt+1"
+      },
+      {
+        "command": "terminalSessions.toggle.terminal",
+        "key": "ctrl+alt+3",
+        "mac": "cmd+alt+3"
+      },
+      {
+        "command": "terminalSessions.toggle.chat",
+        "key": "ctrl+alt+4",
+        "mac": "cmd+alt+4"
+      },
+      {
+        "command": "terminalSessions.newTerminal",
+        "key": "ctrl+shift+`",
+        "mac": "ctrl+shift+`",
+        "when": "terminalSessions.enabled"
+      },
+      {
+        "command": "terminalSessions.shrinkColumn",
+        "key": "ctrl+alt+left",
+        "mac": "cmd+alt+left"
+      },
+      {
+        "command": "terminalSessions.growColumn",
+        "key": "ctrl+alt+right",
+        "mac": "cmd+alt+right"
+      }
+    ],
+    "configuration": {
+      "title": "Terminal Sessions",
+      "properties": {
+        "terminalSessions.columns": {
+          "type": "array",
+          "markdownDescription": "Columns to control, in status-bar order. Leave empty to use the built-in defaults (Files, Terminal, Chat).",
+          "default": [],
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "label",
+              "kind"
+            ],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Stable identifier used to persist visibility."
+              },
+              "label": {
+                "type": "string",
+                "description": "Text shown on the status-bar chip."
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "sidebar",
+                  "panel",
+                  "auxiliaryBar"
+                ],
+                "markdownDescription": "Which workbench container this column controls. The editor is not listed: it is the space the others leave behind, so it cannot be hidden."
+              },
+              "viewId": {
+                "type": "string",
+                "markdownDescription": "Command run when revealing, choosing which view appears — e.g. `workbench.view.explorer` or `workbench.view.scm`."
+              },
+              "position": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "right",
+                  "top",
+                  "bottom"
+                ],
+                "default": "right",
+                "description": "For 'panel' columns: which edge the panel occupies."
+              }
+            }
+          }
+        },
+        "terminalSessions.autoEnable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Restore the layout automatically on startup if it was enabled when the window closed."
+        },
+        "terminalSessions.instanceProfiles": {
+          "type": "array",
+          "default": [],
+          "markdownDescription": "Saved terminal recipes. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally** — write `claude --continue` to rejoin the most recent conversation in `cwd`, or `claude --resume <id>` for an exact one.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "commands"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Profile name, also used as the terminal tab name."
+              },
+              "distro": {
+                "type": "string",
+                "description": "WSL distro to enter. Implies wsl.exe -d <distro> as the shell."
+              },
+              "shellPath": {
+                "type": "string",
+                "description": "Explicit shell for non-WSL profiles. Ignored when 'distro' is set."
+              },
+              "shellArgs": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Arguments for 'shellPath'."
+              },
+              "cwd": {
+                "type": "string",
+                "description": "Working directory. A Linux path when 'distro' is set, otherwise a host path."
+              },
+              "commands": {
+                "type": "array",
+                "markdownDescription": "Commands run in order once the shell is ready. Every command but the last is awaited, so a long-running process such as `claude` belongs last.\n\nEither a plain string, or `{ \"run\": \"...\", \"waitMs\": 5000 }` to override how long to allow before that command runs — on the first command that is how long shell integration is given to activate; on later ones it caps how long the previous may take. Default 3000.",
+                "items": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "required": [
+                        "run"
+                      ],
+                      "properties": {
+                        "run": {
+                          "type": "string",
+                          "description": "The command line to run."
+                        },
+                        "waitMs": {
+                          "type": "number",
+                          "default": 3000,
+                          "minimum": 0,
+                          "description": "Milliseconds to allow before this command runs."
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "terminalSessions.autoRestoreSession": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Reopen saved profiles automatically on startup. Safe by construction: only commands you wrote into a profile yourself are ever run, and a terminal whose process genuinely survived is left alone rather than replaced."
+        },
+        "terminalSessions.restoreDelayMs": {
+          "type": "number",
+          "default": 3000,
+          "description": "How long to wait after startup before restoring, so VS Code's own terminal revival finishes first and tabs are not duplicated."
+        },
+        "terminalSessions.autoEnableEverywhere": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatically in every workspace, including ones where it has never been enabled. Set to false if you would rather opt in per project by clicking a chip."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "node ./node_modules/typescript/bin/tsc -p ./",
+    "watch": "node ./node_modules/typescript/bin/tsc -watch -p ./",
+    "check-types": "node ./node_modules/typescript/bin/tsc --noEmit -p ./",
+    "package": "npx @vscode/vsce package",
+    "publish": "npx @vscode/vsce publish",
+    "publish:patch": "npx @vscode/vsce publish patch",
+    "publish:minor": "npx @vscode/vsce publish minor",
+    "publish:openvsx": "npx ovsx publish"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/vscode": "^1.88.0",
+    "@vscode/vsce": "^3.9.2",
+    "ovsx": "^0.10.1",
+    "typescript": "^5.6.0"
+  }
+}
