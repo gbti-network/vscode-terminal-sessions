@@ -16,9 +16,14 @@ const LEGACY_KEY = 'kanban.layout.v2';
 interface PersistedLayout {
   version: 2;
   /**
+   * Whether the *column layout* is on. Nothing to do with session profiles or
+   * restore, which run regardless — the two halves of this extension are
+   * independent, and only this one has a switch.
+   *
    * Tri-state on purpose. `undefined` means never decided — chips should show
    * so the feature is discoverable — whereas `false` means the user explicitly
-   * turned it off and we should stay out of the way.
+   * turned it off and we should stay out of the way. The field keeps its
+   * original name so existing workspace state still reads.
    */
   enabled?: boolean;
   columns: Record<string, ColumnState>;
@@ -45,13 +50,13 @@ export class LayoutStore {
     this.data = stored && stored.version === 2 ? stored : empty();
   }
 
-  /** True only once the layout has actually been enabled. */
-  get enabled(): boolean {
+  /** True only once the column layout has actually been enabled. */
+  get layoutEnabled(): boolean {
     return this.data.enabled === true;
   }
 
-  /** True only if the user explicitly turned it off. */
-  get disabled(): boolean {
+  /** True only if the user explicitly turned the column layout off. */
+  get layoutDisabled(): boolean {
     return this.data.enabled === false;
   }
 
@@ -70,7 +75,7 @@ export class LayoutStore {
     return seeded;
   }
 
-  async setEnabled(enabled: boolean): Promise<void> {
+  async setLayoutEnabled(enabled: boolean): Promise<void> {
     this.data.enabled = enabled;
     await this.flush();
   }

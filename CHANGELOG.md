@@ -50,6 +50,14 @@ Initial public release on the Visual Studio Marketplace.
   `workbench.action.toggleMaximizedPanel` the chip is dropped rather than shown doing nothing.
 - **One column always stays open.** The last visible column refuses to hide, so the layout cannot be
   emptied to a window with no chip lit to recover from.
+- **The layout's switch is its own.** *Enable / Disable Column Layout* governs the columns and nothing
+  else — session profiles, replay and restore run with the layout off, driven only by
+  `terminalSessions.autoRestoreSession` and your saved profiles. There is no master on/off for the
+  extension; the Extensions view already is one. The settings moved to match:
+  `terminalSessions.layout.autoEnable` and `terminalSessions.layout.autoEnableEverywhere`, with the
+  unprefixed names still read when the new ones are unset.
+- **Disabling the layout sticks.** It outranks `layout.autoEnableEverywhere`, so a workspace you
+  turned it off in stays off across reloads instead of being re-enabled on the next window.
 - **Grow / shrink the focused column** with `Ctrl+Alt+←` / `→`, plus *Reset Layout*.
 - **New Terminal in Column** on ``Ctrl+Shift+` `` while enabled.
 - `terminalSessions.columns` allows the set of controlled containers to be redefined.

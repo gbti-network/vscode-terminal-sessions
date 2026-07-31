@@ -43,13 +43,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "terminalSessions.enable",
-        "title": "Enable",
+        "command": "terminalSessions.layout.enable",
+        "title": "Enable Column Layout",
         "category": "Terminal Sessions"
       },
       {
-        "command": "terminalSessions.disable",
-        "title": "Disable",
+        "command": "terminalSessions.layout.disable",
+        "title": "Disable Column Layout",
         "category": "Terminal Sessions"
       },
       {
@@ -264,7 +264,7 @@
         "command": "terminalSessions.newTerminal",
         "key": "ctrl+shift+`",
         "mac": "ctrl+shift+`",
-        "when": "terminalSessions.enabled"
+        "when": "terminalSessions.layoutEnabled"
       },
       {
         "command": "terminalSessions.shrinkColumn",
@@ -328,9 +328,15 @@
             }
           }
         },
+        "terminalSessions.layout.autoEnable": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Bring the column layout back on startup if it was enabled when the window closed. Affects the columns only — session profiles and restore are independent and have no on/off switch.\n\nA layout you turned off with **Disable Column Layout** stays off regardless."
+        },
         "terminalSessions.autoEnable": {
           "type": "boolean",
           "default": true,
+          "markdownDeprecationMessage": "Renamed to `#terminalSessions.layout.autoEnable#`, since it only ever governed the column layout. Still read if the new setting is unset.",
           "description": "Restore the layout automatically on startup if it was enabled when the window closed."
         },
         "terminalSessions.instanceProfiles": {
@@ -409,9 +415,15 @@
           "default": 3000,
           "description": "How long to wait after startup before restoring, so VS Code's own terminal revival finishes first and tabs are not duplicated."
         },
+        "terminalSessions.layout.autoEnableEverywhere": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Bring the column layout up in every workspace, including ones where it has never been enabled. Set to `false` to opt in per project by clicking a chip.\n\nAffects the columns only. **Disable Column Layout** still wins in the workspace where you ran it — an explicit choice is not overridden by this."
+        },
         "terminalSessions.autoEnableEverywhere": {
           "type": "boolean",
           "default": true,
+          "markdownDeprecationMessage": "Renamed to `#terminalSessions.layout.autoEnableEverywhere#`, since it only ever governed the column layout. Still read if the new setting is unset.",
           "description": "Enable automatically in every workspace, including ones where it has never been enabled. Set to false if you would rather opt in per project by clicking a chip."
         }
       }

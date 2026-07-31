@@ -56,6 +56,7 @@ On a host too old to have either command the chip is dropped entirely rather tha
 | Restore Last Session | status-bar chip |
 | Toggle Files / Editor / Terminal / Chat | `Ctrl+Alt+1` / `2` / `3` / `4` |
 | Show or Hide Column… | — |
+| Enable / Disable Column Layout | — |
 | New Terminal in Column | ``Ctrl+Shift+` `` |
 | Grow / Shrink Focused Column | `Ctrl+Alt+←` / `→` |
 | Reset Layout | — |
@@ -67,10 +68,17 @@ On a host too old to have either command the chip is dropped entirely rather tha
 | `terminalSessions.instanceProfiles` | `[]` | Saved recipes. Hand-editable. |
 | `terminalSessions.autoRestoreSession` | `true` | Reopen saved profiles on startup. |
 | `terminalSessions.restoreDelayMs` | `3000` | Wait for VS Code's own revival first, so tabs aren't duplicated. |
-| `terminalSessions.autoEnableEverywhere` | `true` | Bring the column layout up in every workspace. |
+| `terminalSessions.layout.autoEnableEverywhere` | `true` | Bring the column layout up in every workspace. |
+| `terminalSessions.layout.autoEnable` | `true` | Bring it back on startup where it was already on. |
 | `terminalSessions.columns` | built-in | Which containers the chips control. |
 
-While enabled, four settings are managed at **global** scope and restored on disable: `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`, `terminal.integrated.persistentSessionReviveProcess` (widened to `onExitAndWindowClose`, without which terminals are lost when a window closes rather than the whole application), and `workbench.panel.opensMaximized` (pinned to `never` — its default reopens the panel maximized if it was maximized when last closed, which would hide the editor column with no chip click and from runtime state no API can read).
+### The two halves are independent
+
+Session profiles and the column layout share an extension, not a switch. **Enable / Disable Column Layout** governs the columns and nothing else: profiles, replay and session restore keep working with the layout off, driven only by `terminalSessions.autoRestoreSession` and the profiles you have saved. There is deliberately no master on/off — turning the extension off is what the Extensions view is for.
+
+Disabling the layout sticks. It outranks `layout.autoEnableEverywhere`, so a workspace you turned it off in stays off across reloads rather than being re-enabled by the blanket default.
+
+While the layout is enabled, four settings are managed at **global** scope and restored on disable: `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`, `terminal.integrated.persistentSessionReviveProcess` (widened to `onExitAndWindowClose`, without which terminals are lost when a window closes rather than the whole application), and `workbench.panel.opensMaximized` (pinned to `never` — its default reopens the panel maximized if it was maximized when last closed, which would hide the editor column with no chip click and from runtime state no API can read).
 
 ## Why profiles are declared rather than captured
 

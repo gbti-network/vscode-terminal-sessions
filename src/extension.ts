@@ -33,8 +33,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     context.subscriptions.push(vscode.commands.registerCommand(command, handler));
   };
 
-  register('terminalSessions.enable', () => engine?.enable());
-  register('terminalSessions.disable', () => engine?.disable());
+  register('terminalSessions.layout.enable', () => engine?.enable());
+  register('terminalSessions.layout.disable', () => engine?.disable());
   register('terminalSessions.growColumn', () => engine?.grow());
   register('terminalSessions.shrinkColumn', () => engine?.shrink());
   register('terminalSessions.resetLayout', () => engine?.reset());
@@ -245,13 +245,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   context.subscriptions.push(
     vscode.workspace.onDidChangeConfiguration(async (event) => {
-      if (store.enabled && event.affectsConfiguration('terminalSessions.columns')) {
+      if (store.layoutEnabled && event.affectsConfiguration('terminalSessions.columns')) {
         await engine?.applyAll();
       }
     }),
   );
 
-  await vscode.commands.executeCommand('setContext', 'terminalSessions.enabled', store.enabled);
+  await vscode.commands.executeCommand(
+    'setContext',
+    'terminalSessions.layoutEnabled',
+    store.layoutEnabled,
+  );
 
   // Chips go up straight away, so the extension is discoverable and usable
   // without a hidden enable step. Clicking one enables the layout implicitly.
@@ -260,10 +264,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   await engine.init();
 
   const config = vscode.workspace.getConfiguration('terminalSessions');
-  const autoEnable = config.get<boolean>('autoEnable', true);
-  const everywhere = config.get<boolean>('autoEnableEverywhere', false);
+  const autoEnable = layoutSetting(config, 'autoEnable', true);
+  const everywhere = layoutSetting(config, 'autoEnableEverywhere', true);
 
-  if (everywhere || (store.enabled && autoEnable)) {
+  // An explicit Disable outranks the blanket `autoEnableEverywhere`. The stored
+  // flag is tri-state precisely so "never decided" and "turned off on purpose"
+  // can be told apart, and this is the place that has to honour the difference:
+  // without it, Disable lasted only until the window reloaded.
+  if (!store.layoutDisabled && (everywhere || (store.layoutEnabled && autoEnable))) {
     // Let VS Code finish restoring its own layout first, then assert ours over
     // whatever came back. `enable` is safe when already enabled — it only
     // writes the managed settings on the transition.
@@ -278,6 +286,29 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       void vscode.commands.executeCommand('terminalSessions.restoreSession');
     }, delay);
   }
+}
+
+/**
+ * Read a layout setting, falling back to its pre-rename key.
+ *
+ * `autoEnable` and `autoEnableEverywhere` moved under `layout.` once the column
+ * layout became the only half of this extension with a switch. Anyone who set
+ * the old key should not silently lose it, so an explicit value there still
+ * wins over the new key's default — and only over its *default*, which is why
+ * this inspects rather than calling `get`.
+ */
+function layoutSetting(
+  config: vscode.WorkspaceConfiguration,
+  key: string,
+  fallback: boolean,
+): boolean {
+  const explicit = (name: string): boolean | undefined => {
+    const values = config.inspect<boolean>(name);
+    return (
+      values?.workspaceFolderValue ?? values?.workspaceValue ?? values?.globalValue
+    );
+  };
+  return explicit(`layout.${key}`) ?? explicit(key) ?? fallback;
 }
 
 async function pickColumnToToggle(): Promise<void> {

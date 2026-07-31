@@ -64,8 +64,8 @@ export class LayoutEngine implements vscode.Disposable {
     // still have it restored on disable.
     await this.saveManagedSettings();
     await this.applyManagedSettings();
-    await this.store.setEnabled(true);
-    await vscode.commands.executeCommand('setContext', 'terminalSessions.enabled', true);
+    await this.store.setLayoutEnabled(true);
+    await vscode.commands.executeCommand('setContext', 'terminalSessions.layoutEnabled', true);
     await this.apply();
   }
 
@@ -73,8 +73,8 @@ export class LayoutEngine implements vscode.Disposable {
     this.disposeStatusItems();
     this.applied.clear();
     await this.restoreManagedSettings();
-    await this.store.setEnabled(false);
-    await vscode.commands.executeCommand('setContext', 'terminalSessions.enabled', false);
+    await this.store.setLayoutEnabled(false);
+    await vscode.commands.executeCommand('setContext', 'terminalSessions.layoutEnabled', false);
   }
 
   dispose(): void {
@@ -167,7 +167,7 @@ export class LayoutEngine implements vscode.Disposable {
     }
     // Toggling is how most people first reach for this, so treat it as an
     // implicit enable rather than doing something odd to an unmanaged layout.
-    if (!this.store.enabled) {
+    if (!this.store.layoutEnabled) {
       await this.enable();
     }
     await this.setHidden(id, !this.isHidden(def));
@@ -243,7 +243,7 @@ export class LayoutEngine implements vscode.Disposable {
 
   /** Open a shell in the terminal column, revealing it first if hidden. */
   async newTerminal(): Promise<void> {
-    if (!this.store.enabled) {
+    if (!this.store.layoutEnabled) {
       await this.enable();
     }
     const def = this.columns.find((c) => c.kind === 'panel');
@@ -276,7 +276,7 @@ export class LayoutEngine implements vscode.Disposable {
     // Shown even before the layout has been enabled — the chips *are* the
     // feature, so gating them on an enable step just hides the whole extension.
     // Only an explicit Disable takes them away.
-    if (this.store.disabled) {
+    if (this.store.layoutDisabled) {
       this.disposeStatusItems();
       return;
     }
@@ -376,7 +376,7 @@ export class LayoutEngine implements vscode.Disposable {
   async probe(): Promise<string> {
     return [
       `VS Code ${vscode.version}`,
-      `enabled: ${this.store.enabled}`,
+      `layout enabled: ${this.store.layoutEnabled}${this.store.layoutDisabled ? ' (explicitly disabled)' : ''}`,
       `editor toggle: ${(await resolveEditorToggle()) ?? 'unavailable — editor column dropped'}`,
       `panel position: ${vscode.workspace.getConfiguration().get('workbench.panel.defaultLocation') ?? '-'}`,
       `panel alignment: ${vscode.workspace.getConfiguration().get('workbench.panel.alignment') ?? '-'}`,
