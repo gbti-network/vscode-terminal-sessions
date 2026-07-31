@@ -35,8 +35,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   register('terminalSessions.enable', () => engine?.enable());
   register('terminalSessions.disable', () => engine?.disable());
-  register('terminalSessions.hideAll', () => engine?.hideAll());
-  register('terminalSessions.showAll', () => engine?.showAll());
   register('terminalSessions.growColumn', () => engine?.grow());
   register('terminalSessions.shrinkColumn', () => engine?.shrink());
   register('terminalSessions.resetLayout', () => engine?.reset());
@@ -229,7 +227,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // Declared in package.json and bound to keys, so these must always exist even
   // when the default column set has been replaced. A missing column is a no-op.
-  for (const id of ['files', 'terminal', 'chat']) {
+  for (const id of ['files', 'editor', 'terminal', 'chat']) {
     register(`terminalSessions.toggle.${id}`, () => engine?.toggle(id));
   }
 
@@ -257,7 +255,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // Chips go up straight away, so the extension is discoverable and usable
   // without a hidden enable step. Clicking one enables the layout implicitly.
-  engine.init();
+  // Awaited because it first resolves whether this host can hide the editor
+  // area, which decides whether that chip exists at all.
+  await engine.init();
 
   const config = vscode.workspace.getConfiguration('terminalSessions');
   const autoEnable = config.get<boolean>('autoEnable', true);

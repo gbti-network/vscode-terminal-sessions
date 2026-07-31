@@ -38,10 +38,17 @@ Initial public release on the Visual Studio Marketplace.
 
 ### Columns
 
-- **Explorer, terminal and chat as collapsible columns**, toggled from status-bar chips or
-  `Ctrl+Alt+1` / `3` / `4`, with visibility remembered per workspace. These drive VS Code's real
-  containers — primary sidebar, panel, secondary sidebar — rather than recreating them, which keeps
-  the terminal's own terminal list and the genuine Claude and Codex chat shells intact.
+- **Explorer, editor, terminal and chat as collapsible columns**, toggled from status-bar chips or
+  `Ctrl+Alt+1` / `2` / `3` / `4`, with visibility remembered per workspace. These drive VS Code's real
+  containers — primary sidebar, editor area, panel, secondary sidebar — rather than recreating them,
+  which keeps the terminal's own terminal list and the genuine Claude and Codex chat shells intact.
+- **The editor column is coupled to the terminal one, by construction.** VS Code hides the editor area
+  by maximizing the panel over it, so the editor's space goes to the panel column: the two can never
+  be hidden together, and hiding the editor reveals the terminal column if it was closed. On a host
+  with neither `workbench.action.toggleEditorVisibility` nor `workbench.action.toggleMaximizedPanel`
+  the chip is dropped rather than shown doing nothing.
+- **One column always stays open.** The last visible column refuses to hide, so the layout cannot be
+  emptied to a window with no chip lit to recover from.
 - **Grow / shrink the focused column** with `Ctrl+Alt+←` / `→`, plus *Reset Layout*.
 - **New Terminal in Column** on ``Ctrl+Shift+` `` while enabled.
 - `terminalSessions.columns` allows the set of controlled containers to be redefined.

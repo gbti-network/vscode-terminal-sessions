@@ -2,7 +2,13 @@ import * as vscode from 'vscode';
 import { ColumnDef } from '../columns/types';
 import { getColumns } from '../columns/registry';
 import { LayoutStore } from '../state/store';
-import { hideColumn, resizeFocused, revealColumn } from '../content';
+import {
+  editorColumnSupported,
+  hideColumn,
+  resizeFocused,
+  resolveEditorToggle,
+  revealColumn,
+} from '../content';
 
 /**
  * Settings we override while enabled, snapshotted and restored on disable.
@@ -39,6 +45,11 @@ export class LayoutEngine implements vscode.Disposable {
   private readonly statusItems = new Map<string, vscode.StatusBarItem>();
   /** Visibility last actually pushed to VS Code, per column. */
   private readonly applied = new Map<string, boolean>();
+  /**
+   * Whether this host can hide the editor area. Resolved once in `init`,
+   * because the check is async and `refreshStatusBar` is not.
+   */
+  private editorSupported = true;
 
   constructor(private readonly store: LayoutStore) {}
 
@@ -75,14 +86,37 @@ export class LayoutEngine implements vscode.Disposable {
    * Called on activation so the extension is visible and usable immediately,
    * without rearranging anyone's workbench until they ask for it.
    */
-  init(): void {
+  async init(): Promise<void> {
+    this.editorSupported = await editorColumnSupported();
     this.refreshStatusBar();
   }
 
   // ------------------------------------------------------------------ columns
 
+  /**
+   * The configured columns, minus any this host cannot actually drive.
+   *
+   * A chip that does nothing is worse than no chip, so on a host without either
+   * editor-toggle command the editor column is dropped entirely rather than
+   * shown and silently ignored.
+   */
   get columns(): ColumnDef[] {
-    return getColumns();
+    const columns = getColumns();
+    return this.editorSupported ? columns : columns.filter((c) => c.kind !== 'editor');
+  }
+
+  /**
+   * Apply order, which is load-bearing for the first time.
+   *
+   * Hiding the editor means maximizing the panel, and any later reveal or hide
+   * of the panel column unwinds that. So the editor column goes last, after the
+   * panel has settled. The sort is stable, so everything else keeps its
+   * declared order — which the chips rely on for their status-bar priority.
+   */
+  private get applyOrder(): ColumnDef[] {
+    return [...this.columns].sort(
+      (a, b) => Number(a.kind === 'editor') - Number(b.kind === 'editor'),
+    );
   }
 
   find(id: string): ColumnDef | undefined {
@@ -102,7 +136,7 @@ export class LayoutEngine implements vscode.Disposable {
    * this unconditionally would yank focus around every time any column moved.
    */
   async apply(): Promise<void> {
-    for (const def of this.columns) {
+    for (const def of this.applyOrder) {
       const hidden = this.isHidden(def);
       if (this.applied.get(def.id) !== hidden) {
         await (hidden ? hideColumn(def) : revealColumn(def));
@@ -146,22 +180,37 @@ export class LayoutEngine implements vscode.Disposable {
     await this.setHidden(id, true);
   }
 
+  /**
+   * Columns currently visible. Read through `stateFor`, so ids not yet in the
+   * store are seeded here as visible, which is what they will render as.
+   */
+  private visibleCount(): number {
+    return this.columns.filter((def) => !this.isHidden(def)).length;
+  }
+
   private async setHidden(id: string, hidden: boolean): Promise<void> {
+    // The floor: something always stays open. Hiding the final column would
+    // leave a window with nothing in it and no chip lit to get back from,
+    // since the editor is now hideable too and can no longer be the fallback
+    // the other three used to rely on. Refused silently — the chip not
+    // changing says it, and `run` in content/ swallows failures the same way.
+    if (hidden && this.visibleCount() <= 1) {
+      return;
+    }
+
+    // Hiding the editor is maximizing the panel, so the panel column has to be
+    // open to receive the space. Route it through the store rather than
+    // revealing behind its back, or the terminal chip would claim hidden while
+    // its container is plainly on screen.
+    const def = this.find(id);
+    if (hidden && def?.kind === 'editor') {
+      const panel = this.columns.find((c) => c.kind === 'panel');
+      if (panel && this.isHidden(panel)) {
+        await this.store.setHidden(panel.id, false);
+      }
+    }
+
     await this.store.setHidden(id, hidden);
-    await this.apply();
-  }
-
-  async hideAll(): Promise<void> {
-    for (const def of this.columns) {
-      await this.store.setHidden(def.id, true);
-    }
-    await this.apply();
-  }
-
-  async showAll(): Promise<void> {
-    for (const def of this.columns) {
-      await this.store.setHidden(def.id, false);
-    }
     await this.apply();
   }
 
@@ -287,6 +336,9 @@ export class LayoutEngine implements vscode.Disposable {
     return [
       `VS Code ${vscode.version}`,
       `enabled: ${this.store.enabled}`,
+      `editor toggle: ${(await resolveEditorToggle()) ?? 'unavailable — editor column dropped'}`,
+      `panel position: ${vscode.workspace.getConfiguration().get('workbench.panel.defaultLocation') ?? '-'}`,
+      `panel alignment: ${vscode.workspace.getConfiguration().get('workbench.panel.alignment') ?? '-'}`,
       '',
       'columns:',
       ...this.columns.map((def) => {

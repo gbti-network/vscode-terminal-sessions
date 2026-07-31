@@ -33,9 +33,18 @@ A terminal whose process genuinely survived is left alone rather than replaced �
 
 ## Columns
 
-The Explorer, terminal and chat panes can be shown and hidden independently from status-bar chips, with visibility remembered per workspace. These drive VS Code's **real containers** — the primary sidebar, the panel, and the secondary sidebar — rather than recreating them, which is what keeps the terminal's right-hand terminal list and the genuine Claude and Codex chat shells.
+The Explorer, editor, terminal and chat panes can be shown and hidden from status-bar chips, with visibility remembered per workspace. These drive VS Code's **real containers** — the primary sidebar, the editor area, the panel, and the secondary sidebar — rather than recreating them, which is what keeps the terminal's right-hand terminal list and the genuine Claude and Codex chat shells.
 
-The editor is not a column: it is the space left over once the other three have taken theirs, so there is nothing to hide it into.
+**One column always stays open.** The last visible chip refuses to hide, rather than leaving you with an empty window and nothing lit to get back from.
+
+### The editor column is not like the other three
+
+The others are independent of one another. The editor is not, because of how VS Code hides it: `workbench.action.toggleEditorVisibility` is a one-line delegation to `toggleMaximizedPanel()`. The editor area does not hide into nothing — **its space is handed to the panel**. Two consequences worth knowing before you bind a key to it:
+
+- The editor and terminal columns can never be hidden at the same time. Hiding the editor reveals the terminal column if it was closed, because something has to receive the space.
+- Hiding the editor from VS Code's own **View → Appearance** menu instead of the chip leaves the chip showing the wrong state. Nothing can be done about that: the real state lives in a context key (`mainEditorAreaVisible`) that extensions can set but never read, which is the same reason the other three chips cannot see their containers being closed by their own title-bar buttons.
+
+On a host too old to have either command the chip is dropped entirely rather than shown doing nothing. `Reset Layout` brings everything back.
 
 ## Commands
 
@@ -45,9 +54,11 @@ The editor is not a column: it is the space left over once the other three have 
 | New Instance Profile / Open Profile / Edit Profile | — |
 | Save as Instance Profile | terminal right-click |
 | Restore Last Session | status-bar chip |
-| Toggle Files / Terminal / Chat | `Ctrl+Alt+1` / `3` / `4` |
+| Toggle Files / Editor / Terminal / Chat | `Ctrl+Alt+1` / `2` / `3` / `4` |
+| Show or Hide Column… | — |
 | New Terminal in Column | ``Ctrl+Shift+` `` |
 | Grow / Shrink Focused Column | `Ctrl+Alt+←` / `→` |
+| Reset Layout | — |
 
 ## Settings
 

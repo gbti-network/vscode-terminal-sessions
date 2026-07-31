@@ -1,10 +1,18 @@
 /**
- * The three workbench containers that can be shown and hidden independently.
+ * The workbench containers that can be shown and hidden.
  *
- * The editor is deliberately not one of them: it is the space left over once
- * these three have taken theirs, so there is nothing to hide it into.
+ * The first three are independent of one another. `editor` is not, and the
+ * asymmetry is worth stating: VS Code hides the editor area by *maximizing the
+ * panel* over it — `workbench.action.toggleEditorVisibility` is a one-line
+ * delegation to `toggleMaximizedPanel()`. So the editor's space is not
+ * reclaimed by nothing, it is handed to the panel column, and the two can never
+ * be hidden at the same time.
+ *
+ * An earlier attempt to control the editor area by manipulating editor groups
+ * was tried and removed (see the v1 note in `state/store.ts`). This is the
+ * supported lever, and the only one.
  */
-export type ColumnKind = 'sidebar' | 'panel' | 'auxiliaryBar';
+export type ColumnKind = 'sidebar' | 'panel' | 'auxiliaryBar' | 'editor';
 
 export type PanelPosition = 'left' | 'right' | 'top' | 'bottom';
 

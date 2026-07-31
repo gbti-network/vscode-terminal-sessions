@@ -63,6 +63,11 @@
         "category": "Terminal Sessions"
       },
       {
+        "command": "terminalSessions.toggle.editor",
+        "title": "Toggle Editor Column",
+        "category": "Terminal Sessions"
+      },
+      {
         "command": "terminalSessions.toggle.terminal",
         "title": "Toggle Terminal Column",
         "category": "Terminal Sessions"
@@ -70,16 +75,6 @@
       {
         "command": "terminalSessions.toggle.chat",
         "title": "Toggle Chat Column",
-        "category": "Terminal Sessions"
-      },
-      {
-        "command": "terminalSessions.hideAll",
-        "title": "Hide All Columns",
-        "category": "Terminal Sessions"
-      },
-      {
-        "command": "terminalSessions.showAll",
-        "title": "Show All Columns",
         "category": "Terminal Sessions"
       },
       {
@@ -251,6 +246,11 @@
         "mac": "cmd+alt+1"
       },
       {
+        "command": "terminalSessions.toggle.editor",
+        "key": "ctrl+alt+2",
+        "mac": "cmd+alt+2"
+      },
+      {
         "command": "terminalSessions.toggle.terminal",
         "key": "ctrl+alt+3",
         "mac": "cmd+alt+3"
@@ -305,9 +305,10 @@
                 "enum": [
                   "sidebar",
                   "panel",
-                  "auxiliaryBar"
+                  "auxiliaryBar",
+                  "editor"
                 ],
-                "markdownDescription": "Which workbench container this column controls. The editor is not listed: it is the space the others leave behind, so it cannot be hidden."
+                "markdownDescription": "Which workbench container this column controls.\n\n`editor` is not independent of the others: VS Code hides the editor area by **maximizing the panel** over it, so the editor's space goes to the `panel` column and the two can never be hidden together. Hiding the editor reveals the panel if it was closed.\n\nWhichever columns you list, one always stays visible — the last one refuses to hide."
               },
               "viewId": {
                 "type": "string",

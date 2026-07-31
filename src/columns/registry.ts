@@ -2,15 +2,16 @@ import * as vscode from 'vscode';
 import { ColumnDef, PanelPosition } from './types';
 
 /**
- * Defaults: Explorer on the left, terminal panel on the right, chat in the
- * secondary sidebar — with the editor filling what remains between them.
+ * Defaults: Explorer on the left, the editor next to it, terminal panel on the
+ * right, chat in the secondary sidebar — listed in the order they sit on
+ * screen, which is also the order the chips appear.
  *
- * All three are the real VS Code containers, which matters. The terminal view
- * is the only place its right-hand terminal list exists, the auxiliary bar
- * holds the actual Claude and Codex shells (Codex's editor-area panel is a
- * different webview entirely), and a hand-rolled file tree could not read
- * other extensions' file decorations. VS Code also persists these containers'
- * widths itself, including sash drags no API can observe.
+ * These are the real VS Code containers, which matters. The terminal view is
+ * the only place its right-hand terminal list exists, the auxiliary bar holds
+ * the actual Claude and Codex shells (Codex's editor-area panel is a different
+ * webview entirely), and a hand-rolled file tree could not read other
+ * extensions' file decorations. VS Code also persists these containers' widths
+ * itself, including sash drags no API can observe.
  */
 export const DEFAULT_COLUMNS: ColumnDef[] = [
   {
@@ -18,6 +19,11 @@ export const DEFAULT_COLUMNS: ColumnDef[] = [
     label: 'FILES',
     kind: 'sidebar',
     viewId: 'workbench.view.explorer',
+  },
+  {
+    id: 'editor',
+    label: 'EDITOR',
+    kind: 'editor',
   },
   {
     id: 'terminal',
@@ -32,7 +38,12 @@ export const DEFAULT_COLUMNS: ColumnDef[] = [
   },
 ];
 
-const COLUMN_KINDS: ReadonlySet<string> = new Set(['sidebar', 'panel', 'auxiliaryBar']);
+const COLUMN_KINDS: ReadonlySet<string> = new Set([
+  'sidebar',
+  'panel',
+  'auxiliaryBar',
+  'editor',
+]);
 const PANEL_POSITIONS: ReadonlySet<string> = new Set(['left', 'right', 'top', 'bottom']);
 
 /** Read user-configured columns, falling back to the defaults. */
