@@ -1,5 +1,5 @@
 {
-  "name": "gbti-terminal-sessions",
+  "name": "terminal-sessions",
   "displayName": "Terminal Sessions",
   "description": "Save terminal sessions as reusable profiles — shell, directory and startup commands — and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
   "version": "0.2.0",

@@ -81,6 +81,24 @@ npm run package   # produces a .vsix
 
 Every dependency is pure JavaScript and the build is plain `tsc`, deliberately: this repo lives on a Windows drive that may be driven from either Windows or WSL, and a single shared `node_modules` cannot hold a native binary that works for both. The npm scripts invoke `node ./node_modules/typescript/bin/tsc` directly rather than the `node_modules/.bin` shim, because a WSL `npm install` creates POSIX symlinks there instead of the `.cmd` shims Windows needs.
 
+### Publishing
+
+Published to the Visual Studio Marketplace as **`GBTI.terminal-sessions`**. Authenticate once with a
+[personal access token](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#get-a-personal-access-token)
+scoped to *Marketplace → Manage* for the `gbti-network` Azure DevOps organisation:
+
+```bash
+npx @vscode/vsce login GBTI
+
+npm run package          # build + verify the .vsix locally first
+npm run publish          # publish the current version
+npm run publish:patch    # or bump, tag and publish in one step
+npm run publish:openvsx  # Open VSX, for VSCodium and friends
+```
+
+Add the release notes to `CHANGELOG.md` before bumping — the marketplace renders it as the extension's
+*Changelog* tab. The icon at `media/icon.png` is generated from `media/terminal-sessions.svg`.
+
 ## License
 
 MIT
