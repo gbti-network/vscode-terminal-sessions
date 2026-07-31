@@ -41,7 +41,7 @@ The Explorer, editor, terminal and chat panes can be shown and hidden from statu
 
 The others are independent of one another. The editor is not, because of how VS Code hides it: `workbench.action.toggleEditorVisibility` is a one-line delegation to `toggleMaximizedPanel()`. The editor area does not hide into nothing — **its space is handed to the panel**. Two consequences worth knowing before you bind a key to it:
 
-- The editor and terminal columns can never be hidden at the same time. Hiding the editor reveals the terminal column if it was closed, because something has to receive the space.
+- The editor and terminal columns can never be hidden at the same time, and each moves the other. Hiding the editor reveals the terminal column if it was closed, because something has to receive the space. Hiding the terminal while the editor is hidden brings the editor back — VS Code un-maximizes the panel on its way out — so the editor chip lights up with it.
 - Hiding the editor from VS Code's own **View → Appearance** menu instead of the chip leaves the chip showing the wrong state. Nothing can be done about that: the real state lives in a context key (`mainEditorAreaVisible`) that extensions can set but never read, which is the same reason the other three chips cannot see their containers being closed by their own title-bar buttons.
 
 On a host too old to have either command the chip is dropped entirely rather than shown doing nothing. `Reset Layout` brings everything back.
@@ -70,7 +70,7 @@ On a host too old to have either command the chip is dropped entirely rather tha
 | `terminalSessions.autoEnableEverywhere` | `true` | Bring the column layout up in every workspace. |
 | `terminalSessions.columns` | built-in | Which containers the chips control. |
 
-While enabled, three settings are managed at **global** scope and restored on disable: `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`, and `terminal.integrated.persistentSessionReviveProcess` (widened to `onExitAndWindowClose`, without which terminals are lost when a window closes rather than the whole application).
+While enabled, four settings are managed at **global** scope and restored on disable: `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`, `terminal.integrated.persistentSessionReviveProcess` (widened to `onExitAndWindowClose`, without which terminals are lost when a window closes rather than the whole application), and `workbench.panel.opensMaximized` (pinned to `never` — its default reopens the panel maximized if it was maximized when last closed, which would hide the editor column with no chip click and from runtime state no API can read).
 
 ## Why profiles are declared rather than captured
 

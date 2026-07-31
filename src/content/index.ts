@@ -58,6 +58,11 @@ export async function editorColumnSupported(): Promise<boolean> {
  * `maximizePanel`. Issuing a toggle is therefore only correct because
  * `LayoutEngine.apply` fires on a *change*, so this is never called when the
  * state already matches.
+ *
+ * That contract is load-bearing in one place beyond `apply` itself: when the
+ * workbench moves the editor area on its own — closing a maximized panel
+ * restores it — `setHidden` records the new state *and* pre-seeds `applied`, so
+ * no toggle reaches here to undo what already happened.
  */
 async function toggleEditor(): Promise<boolean> {
   const command = await resolveEditorToggle();

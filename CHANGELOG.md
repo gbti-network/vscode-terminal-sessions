@@ -44,17 +44,21 @@ Initial public release on the Visual Studio Marketplace.
   which keeps the terminal's own terminal list and the genuine Claude and Codex chat shells intact.
 - **The editor column is coupled to the terminal one, by construction.** VS Code hides the editor area
   by maximizing the panel over it, so the editor's space goes to the panel column: the two can never
-  be hidden together, and hiding the editor reveals the terminal column if it was closed. On a host
-  with neither `workbench.action.toggleEditorVisibility` nor `workbench.action.toggleMaximizedPanel`
-  the chip is dropped rather than shown doing nothing.
+  be hidden together, and each moves the other. Hiding the editor reveals the terminal column if it
+  was closed; hiding the terminal un-maximizes the panel and so brings the editor back, and its chip
+  with it. On a host with neither `workbench.action.toggleEditorVisibility` nor
+  `workbench.action.toggleMaximizedPanel` the chip is dropped rather than shown doing nothing.
 - **One column always stays open.** The last visible column refuses to hide, so the layout cannot be
   emptied to a window with no chip lit to recover from.
 - **Grow / shrink the focused column** with `Ctrl+Alt+←` / `→`, plus *Reset Layout*.
 - **New Terminal in Column** on ``Ctrl+Shift+` `` while enabled.
 - `terminalSessions.columns` allows the set of controlled containers to be redefined.
-- While enabled, three settings are managed at global scope and restored on disable:
-  `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`, and
+- While enabled, four settings are managed at global scope and restored on disable:
+  `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`,
   `terminal.integrated.persistentSessionReviveProcess` (widened to `onExitAndWindowClose`, without
-  which terminals are lost when a window closes rather than the whole application).
+  which terminals are lost when a window closes rather than the whole application), and
+  `workbench.panel.opensMaximized` (pinned to `never`, so reopening the terminal cannot hide the
+  editor column without a chip click). The snapshot backfills keys added by later versions, so a
+  setting first managed by an upgrade is still restored on disable.
 
 [0.2.0]: https://github.com/gbti-network/vscode-terminal-sessions/releases/tag/v0.2.0

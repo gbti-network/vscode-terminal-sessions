@@ -21,6 +21,7 @@ const MANAGED_SETTINGS = [
   'terminal.integrated.defaultLocation',
   'workbench.panel.defaultLocation',
   'terminal.integrated.persistentSessionReviveProcess',
+  'workbench.panel.opensMaximized',
 ] as const;
 
 /**
@@ -56,12 +57,12 @@ export class LayoutEngine implements vscode.Disposable {
   // ---------------------------------------------------------------- lifecycle
 
   async enable(): Promise<void> {
-    // Snapshot only on the transition, or we'd record our own overrides as the
-    // values to restore. Applying happens every time, so a workspace already
-    // marked enabled still picks up settings managed by a later version.
-    if (!this.store.enabled) {
-      await this.saveManagedSettings();
-    }
+    // Safe to call unconditionally: it backfills keys it has not recorded yet
+    // and never overwrites an existing entry, so our own overrides are not
+    // snapshotted as the values to restore. That is what lets a workspace
+    // already marked enabled pick up a setting managed by a later version and
+    // still have it restored on disable.
+    await this.saveManagedSettings();
     await this.applyManagedSettings();
     await this.store.setEnabled(true);
     await vscode.commands.executeCommand('setContext', 'terminalSessions.enabled', true);
@@ -198,16 +199,37 @@ export class LayoutEngine implements vscode.Disposable {
       return;
     }
 
-    // Hiding the editor is maximizing the panel, so the panel column has to be
-    // open to receive the space. Route it through the store rather than
-    // revealing behind its back, or the terminal chip would claim hidden while
-    // its container is plainly on screen.
+    // The editor and panel columns are two ends of one lever, so hiding either
+    // has to settle the other first. Both directions are read out of the
+    // workbench source rather than guessed:
+    //
+    //   `toggleMaximizedPanel` maximizing  -> setEditorHidden(true) only. It
+    //     never reveals a hidden panel, so hiding the editor while the panel is
+    //     closed would leave neither on screen.
+    //   `setPanelHidden` hiding a maximized panel -> `e && n &&
+    //     toggleMaximizedPanel()`, whose other branch is setEditorHidden(false).
+    //     So closing the terminal column brings the editor back by itself.
     const def = this.find(id);
-    if (hidden && def?.kind === 'editor') {
-      const panel = this.columns.find((c) => c.kind === 'panel');
-      if (panel && this.isHidden(panel)) {
-        await this.store.setHidden(panel.id, false);
-      }
+    const panel = this.columns.find((c) => c.kind === 'panel');
+    const editor = this.columns.find((c) => c.kind === 'editor');
+
+    if (hidden && def?.kind === 'editor' && panel && this.isHidden(panel)) {
+      // Route through the store rather than revealing behind its back, or the
+      // terminal chip would claim hidden while its container is on screen.
+      await this.store.setHidden(panel.id, false);
+    }
+
+    if (hidden && def?.kind === 'panel' && editor && this.isHidden(editor)) {
+      // Follow VS Code rather than fight it: it is about to restore the editor,
+      // so record that. `applied` is pre-seeded deliberately — without it the
+      // pass below would see a change on the editor column and toggle a
+      // container the workbench has already put right, hiding it straight back.
+      //
+      // This assumes the un-maximize actually fires. `isPanelMaximized` also
+      // requires `!isAuxiliaryBarMaximized()`, so a maximized auxiliary bar
+      // falls into the same drift the README documents for the other columns.
+      await this.store.setHidden(editor.id, false);
+      this.applied.set(editor.id, false);
     }
 
     await this.store.setHidden(id, hidden);
@@ -297,11 +319,24 @@ export class LayoutEngine implements vscode.Disposable {
 
   // -------------------------------------------------------- managed settings
 
+  /**
+   * Snapshot the settings we are about to override, so `disable` can put them
+   * back.
+   *
+   * Merges rather than replaces. Applying happens on every enable, so a version
+   * that manages a new setting will override it in a workspace that was already
+   * enabled and never snapshotted it — and `disable` would then leave that
+   * setting on our value permanently. Backfilling the missing keys closes that,
+   * and existing entries must win, because by now the current value may well be
+   * our own override rather than the user's.
+   */
   private async saveManagedSettings(): Promise<void> {
     const config = vscode.workspace.getConfiguration();
-    const saved: Record<string, unknown> = {};
+    const saved: Record<string, unknown> = { ...(this.store.savedSettings ?? {}) };
     for (const key of MANAGED_SETTINGS) {
-      saved[key] = config.inspect(key)?.globalValue;
+      if (!(key in saved)) {
+        saved[key] = config.inspect(key)?.globalValue;
+      }
     }
     await this.store.setSavedSettings(saved);
   }
@@ -321,6 +356,12 @@ export class LayoutEngine implements vscode.Disposable {
       'terminal.integrated.persistentSessionReviveProcess',
       'onExitAndWindowClose',
     );
+    // Default is "preserve", which reopens the panel maximized if it was
+    // maximized when last closed — and a maximized panel *is* a hidden editor.
+    // That would hide the editor column with no chip click, from runtime state
+    // no API can read. "never" makes the editor chip the only thing that moves
+    // it, which is the whole point of having one.
+    await writeSetting('workbench.panel.opensMaximized', 'never');
   }
 
   private async restoreManagedSettings(): Promise<void> {
