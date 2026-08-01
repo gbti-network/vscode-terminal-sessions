@@ -12,7 +12,7 @@ Save a terminal as a reusable **session profile** (which shell to open, where, a
 ext install GBTI.gbti-terminal-sessions
 ```
 
-![Every profile one click away: the Session Profiles view, with a profile launching claude --continue in the terminal column](.product/public/01-profiles.png)
+![Every profile one click away: the Session Profiles view, with a profile launching claude --resume Alpha in the terminal column](.product/public/01-profiles.png)
 
 ## Session profiles
 
@@ -22,7 +22,18 @@ A profile is a named recipe. Create one from the sidebar's **＋**, or right-cli
 - **Editor.** All fields at once: name, shell, directory, and an ordered command list you can reorder and delete inline.
 - **Terminal `+` dropdown.** Tick *Show in the terminal `+` dropdown* and the profile is mirrored into `terminal.integrated.profiles`, appearing there by name. Commands still run, because the extension replays them whenever a terminal opens with a matching name.
 
-Commands run in order once shell integration reports ready. **Every command but the last is awaited**, so a long-lived process such as `claude` belongs last. They are stored and replayed **literally**: write `claude --continue` to rejoin the most recent conversation in that directory, or `claude --resume <id>` to pin an exact one.
+### Where profiles are saved
+
+A profile is usually *about* a project: it names that project's directory and runs that project's commands. So by default a new profile is saved to the project's `.vscode/settings.json` and appears only there.
+
+- **`terminalSessions.profileScope`** switches new profiles to `global` (your user settings) for the handful that genuinely are portable.
+- The sidebar always shows this project's profiles **plus** any global ones, with the global ones marked, so it is obvious which follow you between projects.
+- Editing a profile rewrites it where it already lives. Nothing changes scope behind your back. **Move Global Profiles into This Workspace** does it deliberately, and the same offer appears once per workspace if global profiles are found.
+- A workspace profile shadows a global one of the same name, matching how settings behave elsewhere in VS Code.
+
+Profiles mirrored into the terminal `+` dropdown are written at their own scope too, so a project's profile does not turn up in another project's dropdown.
+
+Commands run in order once shell integration reports ready. **Every command but the last is awaited**, so a long-lived process such as `claude` belongs last. They are stored and replayed **literally**: write `claude --resume Alpha` to reopen that exact session every time the profile launches, or `claude --continue` to rejoin whatever ran last in that directory.
 
 ![Every field at once: the profile editor with name, shell, working directory and an ordered command list](.product/public/02-editor.png)
 
@@ -59,6 +70,7 @@ On a host too old to have either command the chip is dropped entirely rather tha
 |---|---|
 | Manage Instance Profiles | none |
 | New Instance Profile / Open Profile / Edit Profile | none |
+| Move Global Profiles into This Workspace | none |
 | Save as Instance Profile | terminal right-click |
 | Restore Last Session | status-bar chip |
 | Toggle Files / Editor / Terminal / Chat | `Ctrl+Alt+1` / `2` / `3` / `4` |
@@ -72,7 +84,8 @@ On a host too old to have either command the chip is dropped entirely rather tha
 
 | Setting | Default | |
 |---|---|---|
-| `terminalSessions.instanceProfiles` | `[]` | Saved recipes. Hand-editable. |
+| `terminalSessions.profileScope` | `workspace` | Where a new profile is saved: this project, or global. |
+| `terminalSessions.instanceProfiles` | `[]` | Saved recipes. Hand-editable, at either scope. |
 | `terminalSessions.autoRestoreSession` | `true` | Reopen saved profiles on startup. |
 | `terminalSessions.restoreDelayMs` | `3000` | Wait for VS Code's own revival first, so tabs aren't duplicated. |
 | `terminalSessions.layout.autoEnableEverywhere` | `true` | Bring the column layout up in every workspace. |

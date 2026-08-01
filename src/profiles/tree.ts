@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { InstanceProfile, describeProfile } from './types';
-import { getProfiles } from './registry';
+import { getProfiles, scopeOf } from './registry';
 
 /**
  * The profile list, as a sidebar view.
@@ -51,11 +51,17 @@ export class ProfileTreeProvider
 export class ProfileItem extends vscode.TreeItem {
   constructor(readonly profile: InstanceProfile) {
     super(profile.name, vscode.TreeItemCollapsibleState.None);
-    this.description = describeProfile(profile);
+    const scope = scopeOf(profile.name);
+    // Global profiles are called out because they are the ones that show up in
+    // every project; a workspace profile needs no marker, being the default.
+    this.description = scope === 'global'
+      ? `${describeProfile(profile)} · global`
+      : describeProfile(profile);
     this.tooltip = new vscode.MarkdownString(
       [
         `**${profile.name}**`,
         '',
+        `- Saved in: ${scope === 'global' ? 'user settings, visible in every project' : 'this workspace'}`,
         `- Shell: ${profile.distro ? `${profile.distro} (WSL)` : (profile.shellPath ?? 'host default')}`,
         `- Directory: ${profile.cwd ?? '(inherited)'}`,
         `- In terminal dropdown: ${profile.showInDropdown ? 'yes' : 'no'}`,

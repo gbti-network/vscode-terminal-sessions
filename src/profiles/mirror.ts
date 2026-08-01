@@ -1,6 +1,44 @@
 import * as vscode from 'vscode';
 import { InstanceProfile } from './types';
 import { wslShell } from './wsl';
+import { hasWorkspace, ProfileScope, profileScope, scopeOf } from './registry';
+
+const NATIVE = 'terminal.integrated.profiles';
+
+/**
+ * Mirror a profile at the same scope it is stored at.
+ *
+ * A workspace profile mirrored globally would appear in the terminal dropdown
+ * of every other project, which is the exact leak workspace scoping exists to
+ * stop. `terminal.integrated.profiles.*` is a restricted setting, so a
+ * workspace value is ignored until the workspace is trusted; that is a better
+ * failure than a profile following you everywhere.
+ */
+function targetFor(name: string): ProfileScope {
+  const scope = scopeOf(name) ?? profileScope();
+  return scope === 'workspace' && hasWorkspace() ? 'workspace' : 'global';
+}
+
+function configTarget(scope: ProfileScope): vscode.ConfigurationTarget {
+  return scope === 'global'
+    ? vscode.ConfigurationTarget.Global
+    : vscode.ConfigurationTarget.Workspace;
+}
+
+/**
+ * The value written at one scope, not the resolved one.
+ *
+ * `get` merges objects across scopes, so writing that back at a single target
+ * would copy every other scope's entries into it.
+ */
+function ownValue(scope: ProfileScope, key: string): Record<string, unknown> {
+  const values = vscode.workspace.getConfiguration(NATIVE).inspect<Record<string, unknown>>(key);
+  const raw =
+    scope === 'global'
+      ? values?.globalValue
+      : (values?.workspaceFolderValue ?? values?.workspaceValue);
+  return { ...(raw ?? {}) };
+}
 
 /** Which platform key `terminal.integrated.profiles.*` uses on this machine. */
 function platformKey(): string {
@@ -59,11 +97,15 @@ export class ProfileMirror {
   }
 
   private async write(profile: InstanceProfile): Promise<void> {
-    const config = vscode.workspace.getConfiguration('terminal.integrated.profiles');
+    const config = vscode.workspace.getConfiguration(NATIVE);
     const key = platformKey();
-    const profiles = { ...(config.get<Record<string, unknown>>(key) ?? {}) };
+    const scope = targetFor(profile.name);
+    const profiles = ownValue(scope, key);
 
-    if (profiles[profile.name] !== undefined && !this.owned.includes(profile.name)) {
+    // Checked against the *resolved* value, because a name colliding with one
+    // the user wrote at any scope is still a collision.
+    const resolved = config.get<Record<string, unknown>>(key) ?? {};
+    if (resolved[profile.name] !== undefined && !this.owned.includes(profile.name)) {
       void vscode.window.showWarningMessage(
         `A terminal profile named "${profile.name}" already exists in your settings and was not written to. Rename the instance profile to mirror it.`,
       );
@@ -87,7 +129,7 @@ export class ProfileMirror {
     }
 
     profiles[profile.name] = entry;
-    await config.update(key, profiles, vscode.ConfigurationTarget.Global);
+    await config.update(key, profiles, configTarget(scope));
     await this.setOwned([...this.owned, profile.name]);
   }
 
@@ -95,13 +137,21 @@ export class ProfileMirror {
     if (!this.owned.includes(name)) {
       return; // Never touch a profile the user wrote themselves.
     }
-    const config = vscode.workspace.getConfiguration('terminal.integrated.profiles');
+    const config = vscode.workspace.getConfiguration(NATIVE);
     const key = platformKey();
-    const profiles = { ...(config.get<Record<string, unknown>>(key) ?? {}) };
 
-    if (profiles[name] !== undefined) {
-      delete profiles[name];
-      await config.update(key, profiles, vscode.ConfigurationTarget.Global);
+    // Both scopes: a profile may have been mirrored globally before it moved
+    // into a workspace, and leaving the old entry behind would keep it in every
+    // project's dropdown, which is the leak this is meant to close.
+    for (const scope of ['workspace', 'global'] as const) {
+      if (scope === 'workspace' && !hasWorkspace()) {
+        continue;
+      }
+      const profiles = ownValue(scope, key);
+      if (profiles[name] !== undefined) {
+        delete profiles[name];
+        await config.update(key, profiles, configTarget(scope));
+      }
     }
     await this.setOwned(this.owned.filter((owned) => owned !== name));
   }

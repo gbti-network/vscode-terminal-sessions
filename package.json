@@ -2,7 +2,7 @@
   "name": "gbti-terminal-sessions",
   "displayName": "Terminal Session Profiles",
   "description": "Save terminal sessions as reusable profiles (shell, directory and startup commands) and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "publisher": "GBTI",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -133,6 +133,11 @@
         "title": "Refresh Profiles",
         "category": "Terminal Sessions",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "terminalSessions.profiles.moveToWorkspace",
+        "title": "Move Global Profiles into This Workspace",
+        "category": "Terminal Sessions"
       },
       {
         "command": "terminalSessions.profiles.edit",
@@ -339,10 +344,23 @@
           "markdownDeprecationMessage": "Renamed to `#terminalSessions.layout.autoEnable#`, since it only ever governed the column layout. Still read if the new setting is unset.",
           "description": "Restore the layout automatically on startup if it was enabled when the window closed."
         },
+        "terminalSessions.profileScope": {
+          "type": "string",
+          "enum": [
+            "workspace",
+            "global"
+          ],
+          "default": "workspace",
+          "enumDescriptions": [
+            "Save new profiles in this project's .vscode/settings.json, so they appear only here.",
+            "Save new profiles in your user settings, so they appear in every project."
+          ],
+          "markdownDescription": "Where a **newly created** profile is saved.\n\nThe sidebar always shows this project's profiles plus any global ones, whichever is chosen. Editing an existing profile rewrites it where it already lives, so this never moves one behind your back; use **Move Global Profiles into This Workspace** for that.\n\nFalls back to global in a window with no folder open, where workspace settings cannot be written."
+        },
         "terminalSessions.instanceProfiles": {
           "type": "array",
           "default": [],
-          "markdownDescription": "Saved terminal recipes. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally**: write `claude --resume Alpha` to reopen that exact session each time, or `claude --continue` to rejoin whatever ran last in `cwd`.",
+          "markdownDescription": "Saved terminal recipes. Set here in your user settings they appear in every project; set in a project's `.vscode/settings.json` they appear only there, and a workspace profile shadows a global one of the same name. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally**: write `claude --resume Alpha` to reopen that exact session each time, or `claude --continue` to rejoin whatever ran last in `cwd`.",
           "items": {
             "type": "object",
             "required": [

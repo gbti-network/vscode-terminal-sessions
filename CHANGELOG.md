@@ -4,6 +4,30 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-08-01
+
+### Changed
+
+- **Profiles are bound to a project by default.** They used to live only in user settings, so every
+  project's recipes showed up in every window. New profiles now save to the project's
+  `.vscode/settings.json`, and `terminalSessions.profileScope` switches that back to `global` for
+  the handful that genuinely are portable. The sidebar always lists this project's profiles plus any
+  global ones, marking the global ones so it is obvious which follow you around.
+- Reading unions the two scopes rather than letting VS Code resolve them. For array settings VS Code
+  replaces rather than merges, so a workspace list would otherwise hide the global list entirely.
+- Editing a profile rewrites it where it already lives, so nothing moves scope behind your back.
+  **Move Global Profiles into This Workspace** does it deliberately, and the same offer appears once
+  per workspace when global profiles are found.
+- The terminal dropdown mirror now writes at the profile's own scope. A workspace profile mirrored
+  globally would have appeared in every other project's `+` dropdown, which is the leak this whole
+  change exists to close.
+
+### Fixed
+
+- A failure to register the Session Profiles view no longer aborts activation. It throws when a
+  second copy of the extension claims the same view id, which happens when an orphaned folder from a
+  rename is still on disk, and it used to take the status bar chips and every command down with it.
+
 ## [0.2.4] - 2026-08-01
 
 ### Fixed

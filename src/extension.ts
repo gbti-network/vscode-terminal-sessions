@@ -9,6 +9,7 @@ import { launchProfile, markHandled, replayCommands, wasHandled } from './profil
 import { ProfileMirror } from './profiles/mirror';
 import { registerSavedSessionProfile } from './profiles/provider';
 import { deleteProfile, getProfiles } from './profiles/registry';
+import { migrateCommand, offerMigration } from './profiles/migrate';
 import { ProfileItem, ProfileTreeProvider } from './profiles/tree';
 import { ProfileManager } from './profiles/manager';
 import { listWslDistros } from './profiles/wsl';
@@ -123,23 +124,46 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // ---- sidebar view ----
 
   const tree = new ProfileTreeProvider();
+  context.subscriptions.push(tree);
+
   // createTreeView rather than registerTreeDataProvider: it exposes `visible`,
   // which is what lets the editor drop its own profile list when the sidebar is
   // already showing one. Two lists side by side is redundant and squeezes the
   // form into an unusable width.
-  const treeView = vscode.window.createTreeView('terminalSessions.profiles', {
-    treeDataProvider: tree,
-  });
-  context.subscriptions.push(tree, treeView);
+  //
+  // Guarded because it throws "No view is registered" when something else has
+  // claimed the id, which happens when a second copy of this extension is
+  // installed: an orphaned folder left behind by a rename still gets scanned,
+  // and only one copy can own the view. Unguarded, that error aborts the rest
+  // of activate and takes the chips and every command down with it, which is a
+  // far worse failure than a missing sidebar.
+  let treeView: vscode.TreeView<ProfileItem> | undefined;
+  try {
+    treeView = vscode.window.createTreeView('terminalSessions.profiles', {
+      treeDataProvider: tree,
+    });
+  } catch {
+    void vscode.window.showWarningMessage(
+      'Terminal Sessions: the Session Profiles view could not be registered, usually because a second copy of this extension is installed. Everything else still works, and profiles are available from the command palette.',
+    );
+  }
 
-  const syncManagerChrome = () => ProfileManager.setListVisible(!treeView.visible);
-  context.subscriptions.push(treeView.onDidChangeVisibility(syncManagerChrome));
-  syncManagerChrome();
+  if (treeView) {
+    const view = treeView;
+    context.subscriptions.push(view);
+    const syncManagerChrome = () => ProfileManager.setListVisible(!view.visible);
+    context.subscriptions.push(view.onDidChangeVisibility(syncManagerChrome));
+    syncManagerChrome();
+  } else {
+    // No sidebar list, so the editor keeps its own.
+    ProfileManager.setListVisible(true);
+  }
 
   register('terminalSessions.profiles.new', async () => {
     await openManager().newDraft();
   });
   register('terminalSessions.profiles.refresh', () => tree.refresh());
+  register('terminalSessions.profiles.moveToWorkspace', () => migrateCommand(context));
 
   register('terminalSessions.profiles.edit', async (item?: ProfileItem) => {
     const manager = openManager();
@@ -277,6 +301,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     // writes the managed settings on the transition.
     setTimeout(() => void engine?.enable(), 1200);
   }
+
+  // Offered after the window settles, so it does not compete with startup
+  // restore for attention.
+  setTimeout(() => void offerMigration(context), 4000);
 
   if (config.get<boolean>('autoRestoreSession', true)) {
     // Wait for VS Code's own terminal revival to finish, otherwise the revived
