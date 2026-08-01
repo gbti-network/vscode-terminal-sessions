@@ -79,7 +79,7 @@ export class SessionRecorder implements vscode.Disposable {
             `claude started: ${terminal.name}\n` +
               `  command:    ${line.value}\n` +
               `  confidence: ${observed.confidence}  trusted: ${observed.isTrusted}\n` +
-              `  sessionId:  ${entry.claudeSessionId ?? '(none — restore would use --continue)'}`,
+              `  sessionId:  ${entry.claudeSessionId ?? '(none, restore would use --continue)'}`,
           );
         }
       }),
@@ -149,8 +149,8 @@ export class SessionRecorder implements vscode.Disposable {
           `  ${record.name}`,
           `    process:    ${alive ? `ALIVE (pid ${pid})` : `DEAD${exit ? ` (exit ${exit.code ?? '?'})` : ' (no pid)'}`}`,
           `    integration:${terminal.shellIntegration ? ' active' : ' none'}`,
-          `    cwd:        ${record.cwd ?? '(unknown — no shell integration)'}`,
-          `    shellPath:  ${record.shellPath ?? '(EMPTY — profile args not exposed)'}`,
+          `    cwd:        ${record.cwd ?? '(unknown, no shell integration)'}`,
+          `    shellPath:  ${record.shellPath ?? '(EMPTY, profile args not exposed)'}`,
           `    shellArgs:  ${formatArgs(record.shellArgs)}`,
           `    wsl:        ${record.isWsl ? `yes, distro=${record.distro ?? '(default)'}` : 'no'}`,
           `    claude:     ${describeClaude(record)}`,

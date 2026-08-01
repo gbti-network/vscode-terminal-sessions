@@ -3,6 +3,7 @@
 .snapshots/**
 .data/**
 .claude/**
+.product/**
 .github/**
 .git/**
 .idea/**

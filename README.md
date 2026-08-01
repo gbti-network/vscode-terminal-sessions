@@ -2,27 +2,7 @@
 
 Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
 
-```text
-+------------------------------------+
-| SESSION PROFILES             +   ~ |
-|   Alpha                    [>] [/] |
-|     Ubuntu . claude --continue     |
-|   Beta                     [>] [/] |
-|     host shell . npm run watch     |
-+------------------------------------+
-  the sidebar: navigate and launch
-
-+------------+-----------------------+
-| PROFILES + | Name  [Alpha        ] |
-| > Alpha    | Shell [Ubuntu (WSL) ] |
-|   Beta     | Cwd   [/mnt/d/../app] |
-|            | [x] Show in dropdown  |
-|            | Commands              |
-|            |  1 [claude --continue]|
-|            |  2 [npm run watch    ]|
-+------------+-----------------------+
-  the editor: every field at once
-```
+![Every profile one click away: the Session Profiles view, with a profile launching claude --continue in the terminal column](.product/public/01-profiles.png)
 
 ## Session profiles
 
@@ -33,6 +13,8 @@ A profile is a named recipe. Create one from the sidebar's **＋**, or right-cli
 - **Terminal `+` dropdown.** Tick *Show in the terminal `+` dropdown* and the profile is mirrored into `terminal.integrated.profiles`, appearing there by name. Commands still run, because the extension replays them whenever a terminal opens with a matching name.
 
 Commands run in order once shell integration reports ready. **Every command but the last is awaited**, so a long-lived process such as `claude` belongs last. They are stored and replayed **literally**: write `claude --continue` to rejoin the most recent conversation in that directory, or `claude --resume <id>` to pin an exact one.
+
+![Every field at once: the profile editor with name, shell, working directory and an ordered command list](.product/public/02-editor.png)
 
 ### Restoring after a restart
 
@@ -45,6 +27,8 @@ A terminal whose process genuinely survived is left alone rather than replaced: 
 The Explorer, editor, terminal and chat panes can be shown and hidden from status-bar chips, with visibility remembered per workspace. These drive VS Code's **real containers** (the primary sidebar, the editor area, the panel, and the secondary sidebar) rather than recreating them, which is what keeps the terminal's right-hand terminal list and the genuine Claude and Codex chat shells.
 
 **One column always stays open.** The last visible chip refuses to hide, rather than leaving you with an empty window and nothing lit to get back from.
+
+![Four columns, one keystroke each: Explorer, editor, terminal and chat with their status bar chips](.product/public/03-columns.png)
 
 ### The editor column is not like the other three
 

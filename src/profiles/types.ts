@@ -99,5 +99,5 @@ export function describeProfile(profile: InstanceProfile): string {
   const where = profile.distro ? `${profile.distro}` : (profile.shellPath ?? 'default shell');
   const commands = normalizeCommands(profile.commands);
   const what = commands.length ? commands[commands.length - 1].run : 'no commands';
-  return `${where} — ${what}`;
+  return `${where} · ${what}`;
 }

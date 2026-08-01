@@ -4,6 +4,17 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-07-31
+
+### Changed
+
+- Annotated screenshots on the listing, replacing the ASCII diagram. That diagram used fullwidth and
+  ambiguous-width glyphs, which line up in a terminal but not in the marketplace font, so its box
+  edges came out ragged and it clipped in the narrow Extension view.
+- No em-dashes in any shipped string. `describeProfile` put one between a profile's shell and its
+  last command, so it appeared on every row of the sidebar; the diagnostics output and several
+  setting descriptions carried them too.
+
 ## [0.2.0] - 2026-07-30
 
 Initial public release on the Visual Studio Marketplace.

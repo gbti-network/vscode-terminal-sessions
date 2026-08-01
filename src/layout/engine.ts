@@ -377,7 +377,7 @@ export class LayoutEngine implements vscode.Disposable {
     return [
       `VS Code ${vscode.version}`,
       `layout enabled: ${this.store.layoutEnabled}${this.store.layoutDisabled ? ' (explicitly disabled)' : ''}`,
-      `editor toggle: ${(await resolveEditorToggle()) ?? 'unavailable — editor column dropped'}`,
+      `editor toggle: ${(await resolveEditorToggle()) ?? 'unavailable, editor column dropped'}`,
       `panel position: ${vscode.workspace.getConfiguration().get('workbench.panel.defaultLocation') ?? '-'}`,
       `panel alignment: ${vscode.workspace.getConfiguration().get('workbench.panel.alignment') ?? '-'}`,
       '',
