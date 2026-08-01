@@ -128,4 +128,4 @@ Add the release notes to `CHANGELOG.md` before bumping. The marketplace renders 
 
 ## License
 
-MIT
+MIT, copyright Gethsemane LLC. See [LICENSE](LICENSE).
