@@ -4,6 +4,16 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2026-08-01
+
+### Fixed
+
+- **Save no longer fails silently.** A settings write can genuinely fail: an untrusted workspace,
+  read-only settings, or a window whose configuration registry has lost the key after the extension
+  was updated in place. The rejection went unhandled, so the button appeared to do nothing at all,
+  with no profile and no error. A failed project write now falls back to global and says so, and any
+  other failure is reported rather than swallowed.
+
 ## [0.3.2] - 2026-08-01
 
 ### Added

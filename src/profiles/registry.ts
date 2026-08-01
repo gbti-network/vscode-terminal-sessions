@@ -145,12 +145,38 @@ export async function moveToWorkspace(names: string[]): Promise<number> {
 
 async function writeAt(scope: ProfileScope, profiles: InstanceProfile[]): Promise<void> {
   const sorted = [...profiles].sort((a, b) => a.name.localeCompare(b.name));
-  await vscode.workspace.getConfiguration(SECTION).update(
-    KEY,
-    // `undefined` removes the key rather than leaving an empty array behind, so
-    // an emptied workspace list falls back to the global one instead of
-    // shadowing it with nothing.
-    sorted.length ? sorted : undefined,
-    scope === 'global' ? vscode.ConfigurationTarget.Global : vscode.ConfigurationTarget.Workspace,
-  );
+  // `undefined` removes the key rather than leaving an empty array behind, so
+  // an emptied workspace list falls back to the global one instead of shadowing
+  // it with nothing.
+  const value = sorted.length ? sorted : undefined;
+
+  try {
+    await vscode.workspace
+      .getConfiguration(SECTION)
+      .update(
+        KEY,
+        value,
+        scope === 'global'
+          ? vscode.ConfigurationTarget.Global
+          : vscode.ConfigurationTarget.Workspace,
+      );
+    return;
+  } catch (error) {
+    // A workspace write can genuinely fail: an untrusted workspace, settings
+    // that are read only, or a window whose configuration registry has lost the
+    // key after the extension was updated in place. Losing the profile in that
+    // case is the worst outcome, so it goes to global instead and says so.
+    // Silently doing nothing is what this replaces.
+    if (scope === 'global') {
+      throw error;
+    }
+    await vscode.workspace
+      .getConfiguration(SECTION)
+      .update(KEY, value, vscode.ConfigurationTarget.Global);
+    void vscode.window.showWarningMessage(
+      `Could not save to this project's settings, so the profile was saved globally instead. ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
 }

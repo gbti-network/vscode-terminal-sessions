@@ -163,13 +163,24 @@ export class ProfileManager {
           void vscode.window.showErrorMessage('A profile needs a name and at least one command.');
           return;
         }
-        // Renaming means the old entry has to go, or both would linger.
-        if (message.originalName && message.originalName !== profile.name) {
-          await deleteProfile(message.originalName);
+        // Wrapped because a settings write can fail, and an unhandled rejection
+        // here means the button appears to do nothing at all: no profile, no
+        // error, no clue. Saying why is the minimum.
+        try {
+          // Renaming means the old entry has to go, or both would linger.
+          if (message.originalName && message.originalName !== profile.name) {
+            await deleteProfile(message.originalName);
+          }
+          await saveProfile(profile, message.scope === 'global' ? 'global' : 'workspace');
+          await this.mirror.sync(profile, message.originalName);
+          this.onSaved(profile);
+        } catch (error) {
+          void vscode.window.showErrorMessage(
+            `Could not save "${profile.name}": ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
         }
-        await saveProfile(profile, message.scope === 'global' ? 'global' : 'workspace');
-        await this.mirror.sync(profile, message.originalName);
-        this.onSaved(profile);
         await this.refresh(profile.name);
         return;
       }
