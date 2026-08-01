@@ -4,6 +4,22 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.2] - 2026-07-31
+
+### Fixed
+
+- The restore section claimed VS Code brings terminal tabs back on its own. It does not: closing a
+  window loses them outright, because `persistentSessionReviveProcess` ships as `onExit`, meaning
+  *application* exit. Widening it is what makes the tabs return at all, and that widening is
+  something this extension does. The old wording described post-install behaviour as though it were
+  stock, which read backwards to anyone who had not installed yet.
+
+### Changed
+
+- Screenshots and the settings help lead with `claude --resume Alpha`, pinning one exact session per
+  profile, rather than `claude --continue`, which rejoins whatever ran last in that directory.
+- README links to the marketplace listing, with version, install and rating badges.
+
 ## [0.2.1] - 2026-07-31
 
 ### Changed
@@ -37,9 +53,11 @@ Initial public release on the Visual Studio Marketplace.
 
 ### Session restore
 
-- **Automatic restore on startup.** Launched profiles are remembered per workspace and reopened
-  after a restart, closing the gap VS Code leaves: it revives terminal *tabs*, but a revived tab is a
-  fresh default-profile shell with replayed scrollback, not the process you left running.
+- **Automatic restore on startup.** Closing a VS Code window loses terminals outright by default,
+  because `persistentSessionReviveProcess` ships as `onExit`, meaning *application* exit. Widening it
+  to `onExitAndWindowClose` is what brings the tabs back at all. Even then a revived tab is a fresh
+  default-profile shell with replayed scrollback, not the process you left running, so each tab
+  matching a saved profile is disposed and relaunched as that profile.
 - **Live processes are never killed.** The process id recorded at launch is compared against the one
   that came back, so a terminal that genuinely survived is left alone rather than replaced.
 - **Manual control.** *Restore Last Session* from the status bar or palette, and *Stop Restoring a

@@ -125,7 +125,7 @@
     <div class="pin" style="top: 266px;">3</div>
     <div class="win" style="height: 302px;">
       <div class="titlebar"><span class="dot"></span><span class="dot"></span><div class="title">crowmac : Visual Studio Code</div></div>
-      <div class="body" style="grid-template-columns: 44px 296px 1fr;">
+      <div class="body" style="grid-template-columns: 44px 342px 1fr;">
         <div class="activity">
           <svg class="act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg>
           <svg class="act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg>
@@ -140,7 +140,7 @@
           </div>
           <div class="row sel">
             <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="var(--green)" stroke-width="1.4"><rect x="2" y="2.5" width="12" height="4.5" rx="1"/><rect x="2" y="9" width="12" height="4.5" rx="1"/></svg>
-            <span>Alpha</span><span class="desc">Ubuntu &middot; claude --continue</span>
+            <span>Alpha</span><span class="desc">Ubuntu &middot; claude --resume Alpha</span>
             <span class="inline">
               <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.5l7 4.5-7 4.5z"/></svg>
               <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M11.5 2.5l2 2-8 8H3.5v-2z"/></svg>
@@ -160,9 +160,9 @@
           <div class="term-body">
             <div><span class="d">atwellpub@Ubuntu</span>:<span class="b">/mnt/d/repos/crowmac</span>$ nvm use 22</div>
             <div class="d">Now using node v22.14.0</div>
-            <div><span class="d">atwellpub@Ubuntu</span>:<span class="b">/mnt/d/repos/crowmac</span>$ claude --continue</div>
+            <div><span class="d">atwellpub@Ubuntu</span>:<span class="b">/mnt/d/repos/crowmac</span>$ claude --resume Alpha</div>
             <div class="d">&nbsp;</div>
-            <div><span class="g">&#9656;</span> Resuming the last conversation in this directory</div>
+            <div><span class="g">&#9656;</span> Resuming session Alpha</div>
             <div class="d">&nbsp;</div>
             <div><span class="d">&gt;</span> <span style="color:#e8e8e8">_</span></div>
           </div>
@@ -178,7 +178,7 @@
   </div>
   <div class="notes">
     <div class="note"><div class="num">1</div><p><b>A profile is a named recipe.</b> Which shell to open, where, and what to run once it is ready. Launch it inline; clicking the name opens the editor instead, because spawning processes is too consequential for a single click.</p></div>
-    <div class="note"><div class="num">2</div><p><b>Commands replay literally</b> once shell integration reports ready. Write <code>claude --continue</code> to rejoin the last conversation in that directory.</p></div>
+    <div class="note"><div class="num">2</div><p><b>Commands replay literally</b> once shell integration reports ready. Write <code>claude --resume Alpha</code> to reopen that exact session every time the profile launches.</p></div>
     <div class="note"><div class="num">3</div><p><b>Chips show and hide each column</b>, remembered per workspace. One column always stays open.</p></div>
   </div>
 </div>
@@ -217,7 +217,7 @@
                 </span>
               </div>
               <div class="cmd">
-                <span class="idx">2</span><div class="input">claude --continue</div><div class="input">5000</div>
+                <span class="idx">2</span><div class="input">claude --resume Alpha</div><div class="input">5000</div>
                 <span class="acts">
                   <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 12.5v-9M4.5 7L8 3.5 11.5 7"/></svg>
                   <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 3.5v9M4.5 9L8 12.5 11.5 9"/></svg>
@@ -276,7 +276,7 @@
           <div class="term-head"><span class="on">TERMINAL</span><span>PORTS</span></div>
           <div class="term-body">
             <div class="d">Alpha</div>
-            <div><span class="g">&#9656;</span> claude --continue</div>
+            <div><span class="g">&#9656;</span> claude --resume Alpha</div>
             <div class="d">&nbsp;</div>
             <div class="d">Beta</div>
             <div><span class="g">&#9656;</span> npm run watch</div>

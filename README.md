@@ -1,6 +1,17 @@
 # Terminal Session Profiles
 
+[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/GBTI.gbti-terminal-sessions?label=marketplace&color=4ee39a)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
+[![Installs](https://img.shields.io/visual-studio-marketplace/i/GBTI.gbti-terminal-sessions?label=installs&color=4ee39a)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
+[![Rating](https://img.shields.io/visual-studio-marketplace/stars/GBTI.gbti-terminal-sessions?label=rating&color=4ee39a)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions&ssr=false#review-details)
+[![License](https://img.shields.io/badge/license-MIT-4ee39a)](LICENSE)
+
 Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
+
+**[Install from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)**, or from Quick Open inside VS Code (`Ctrl+P`):
+
+```
+ext install GBTI.gbti-terminal-sessions
+```
 
 ![Every profile one click away: the Session Profiles view, with a profile launching claude --continue in the terminal column](.product/public/01-profiles.png)
 
@@ -18,7 +29,11 @@ Commands run in order once shell integration reports ready. **Every command but 
 
 ### Restoring after a restart
 
-VS Code brings terminal *tabs* back, but not what was running in them: a revived tab is a fresh default-profile shell with replayed scrollback. Terminal Sessions closes that gap. Launched profiles are remembered per workspace and reopened automatically on startup, or on demand from the **Restore** chip in the status bar.
+Out of the box, closing a VS Code **window** loses your terminals entirely. `terminal.integrated.persistentSessionReviveProcess` defaults to `onExit`, which means *application* exit, so a window close or a stopped debug session takes them with it. Terminal Sessions widens that to `onExitAndWindowClose`, and that alone is what makes the tabs come back.
+
+Tabs are only half of it, though. A revived tab is a fresh **default-profile** shell with your old scrollback replayed into it: the name is right and the text looks familiar, but the shell is wrong and nothing is running. In testing, an `Alpha` tab that had been Ubuntu with `claude` in it came back as a bare `PS D:\...>` prompt.
+
+So the extension does the other half too. Launched profiles are remembered per workspace, and on startup each revived tab whose name matches a saved profile is disposed and relaunched as that profile, in the right shell, with its commands replayed. Automatic by default, or on demand from the **Restore** chip in the status bar.
 
 A terminal whose process genuinely survived is left alone rather than replaced: the process id recorded at launch is compared against the one that came back, because the two cases are indistinguishable by name and getting it wrong would kill a live session.
 

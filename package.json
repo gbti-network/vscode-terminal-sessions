@@ -2,7 +2,7 @@
   "name": "gbti-terminal-sessions",
   "displayName": "Terminal Session Profiles",
   "description": "Save terminal sessions as reusable profiles (shell, directory and startup commands) and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "GBTI",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -342,7 +342,7 @@
         "terminalSessions.instanceProfiles": {
           "type": "array",
           "default": [],
-          "markdownDescription": "Saved terminal recipes. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally**: write `claude --continue` to rejoin the most recent conversation in `cwd`, or `claude --resume <id>` for an exact one.",
+          "markdownDescription": "Saved terminal recipes. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally**: write `claude --resume Alpha` to reopen that exact session each time, or `claude --continue` to rejoin whatever ran last in `cwd`.",
           "items": {
             "type": "object",
             "required": [
