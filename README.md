@@ -1,4 +1,4 @@
-# Terminal Sessions
+# Terminal Session Profiles
 
 Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
 

@@ -2,8 +2,15 @@ node_modules/
 out/
 *.vsix
 .data/
-.product/
 .snapshots/
+
+# Branding and asset sources stay local. `public/` is the exception: it holds
+# the exported images the README and the marketplace listing point at, so those
+# have to be committed or the links resolve to nothing once published.
+# Written as a wildcard rather than `.product/`, because git cannot re-include
+# a path whose parent directory is excluded.
+.product/*
+!.product/public/
 .env
 .env.*
 !.env.example
