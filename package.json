@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/gbti-network/vscode-terminal-sessions/issues"
   },
-  "homepage": "https://gbti.network/products/vscode-terminal-sessions/",
+  "homepage": "https://github.com/gbti-network/vscode-terminal-sessions",
   "engines": {
     "vscode": "^1.88.0"
   },

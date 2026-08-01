@@ -17,6 +17,7 @@ tsconfig.json
 .env.*
 package-lock.json
 CONTRIBUTING.md
+CLAUDE.md
 **/*.ts
 **/*.map
 *.vsix

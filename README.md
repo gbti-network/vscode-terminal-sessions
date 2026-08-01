@@ -1,6 +1,6 @@
 # Terminal Sessions
 
-Save a terminal as a reusable **session profile** — which shell to open, where, and what to run once it is ready — then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
+Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
 
 ```
 ┌──────────────────────────┐   ┌─────────────┬───────────────────────────────┐
@@ -19,29 +19,29 @@ Save a terminal as a reusable **session profile** — which shell to open, where
 
 A profile is a named recipe. Create one from the sidebar's **＋**, or right-click any terminal and choose **Save as Instance Profile** to start from a terminal you already have open.
 
-- **Sidebar** — every profile, with an inline ▶ to launch and ✎ to edit. Clicking a profile edits it rather than launching, because spawning processes is too consequential for a single click.
-- **Editor** — all fields at once: name, shell, directory, and an ordered command list you can reorder and delete inline.
-- **Terminal `+` dropdown** — tick *Show in the terminal `+` dropdown* and the profile is mirrored into `terminal.integrated.profiles`, appearing there by name. Commands still run, because the extension replays them whenever a terminal opens with a matching name.
+- **Sidebar.** Every profile, with an inline ▶ to launch and ✎ to edit. Clicking a profile edits it rather than launching, because spawning processes is too consequential for a single click.
+- **Editor.** All fields at once: name, shell, directory, and an ordered command list you can reorder and delete inline.
+- **Terminal `+` dropdown.** Tick *Show in the terminal `+` dropdown* and the profile is mirrored into `terminal.integrated.profiles`, appearing there by name. Commands still run, because the extension replays them whenever a terminal opens with a matching name.
 
-Commands run in order once shell integration reports ready. **Every command but the last is awaited**, so a long-lived process such as `claude` belongs last. They are stored and replayed **literally** — write `claude --continue` to rejoin the most recent conversation in that directory, or `claude --resume <id>` to pin an exact one.
+Commands run in order once shell integration reports ready. **Every command but the last is awaited**, so a long-lived process such as `claude` belongs last. They are stored and replayed **literally**: write `claude --continue` to rejoin the most recent conversation in that directory, or `claude --resume <id>` to pin an exact one.
 
 ### Restoring after a restart
 
 VS Code brings terminal *tabs* back, but not what was running in them: a revived tab is a fresh default-profile shell with replayed scrollback. Terminal Sessions closes that gap. Launched profiles are remembered per workspace and reopened automatically on startup, or on demand from the **Restore** chip in the status bar.
 
-A terminal whose process genuinely survived is left alone rather than replaced — the process id recorded at launch is compared against the one that came back, because the two cases are indistinguishable by name and getting it wrong would kill a live session.
+A terminal whose process genuinely survived is left alone rather than replaced: the process id recorded at launch is compared against the one that came back, because the two cases are indistinguishable by name and getting it wrong would kill a live session.
 
 ## Columns
 
-The Explorer, editor, terminal and chat panes can be shown and hidden from status-bar chips, with visibility remembered per workspace. These drive VS Code's **real containers** — the primary sidebar, the editor area, the panel, and the secondary sidebar — rather than recreating them, which is what keeps the terminal's right-hand terminal list and the genuine Claude and Codex chat shells.
+The Explorer, editor, terminal and chat panes can be shown and hidden from status-bar chips, with visibility remembered per workspace. These drive VS Code's **real containers** (the primary sidebar, the editor area, the panel, and the secondary sidebar) rather than recreating them, which is what keeps the terminal's right-hand terminal list and the genuine Claude and Codex chat shells.
 
 **One column always stays open.** The last visible chip refuses to hide, rather than leaving you with an empty window and nothing lit to get back from.
 
 ### The editor column is not like the other three
 
-The others are independent of one another. The editor is not, because of how VS Code hides it: `workbench.action.toggleEditorVisibility` is a one-line delegation to `toggleMaximizedPanel()`. The editor area does not hide into nothing — **its space is handed to the panel**. Two consequences worth knowing before you bind a key to it:
+The others are independent of one another. The editor is not, because of how VS Code hides it: `workbench.action.toggleEditorVisibility` is a one-line delegation to `toggleMaximizedPanel()`. The editor area does not hide into nothing: **its space is handed to the panel**. Two consequences worth knowing before you bind a key to it:
 
-- The editor and terminal columns can never be hidden at the same time, and each moves the other. Hiding the editor reveals the terminal column if it was closed, because something has to receive the space. Hiding the terminal while the editor is hidden brings the editor back — VS Code un-maximizes the panel on its way out — so the editor chip lights up with it.
+- The editor and terminal columns can never be hidden at the same time, and each moves the other. Hiding the editor reveals the terminal column if it was closed, because something has to receive the space. Hiding the terminal while the editor is hidden brings the editor back, since VS Code un-maximizes the panel on its way out; the editor chip lights up with it.
 - Hiding the editor from VS Code's own **View → Appearance** menu instead of the chip leaves the chip showing the wrong state. Nothing can be done about that: the real state lives in a context key (`mainEditorAreaVisible`) that extensions can set but never read, which is the same reason the other three chips cannot see their containers being closed by their own title-bar buttons.
 
 On a host too old to have either command the chip is dropped entirely rather than shown doing nothing. `Reset Layout` brings everything back.
@@ -50,16 +50,16 @@ On a host too old to have either command the chip is dropped entirely rather tha
 
 | Command | Default key |
 |---|---|
-| Manage Instance Profiles | — |
-| New Instance Profile / Open Profile / Edit Profile | — |
+| Manage Instance Profiles | none |
+| New Instance Profile / Open Profile / Edit Profile | none |
 | Save as Instance Profile | terminal right-click |
 | Restore Last Session | status-bar chip |
 | Toggle Files / Editor / Terminal / Chat | `Ctrl+Alt+1` / `2` / `3` / `4` |
-| Show or Hide Column… | — |
-| Enable / Disable Column Layout | — |
+| Show or Hide Column… | none |
+| Enable / Disable Column Layout | none |
 | New Terminal in Column | ``Ctrl+Shift+` `` |
 | Grow / Shrink Focused Column | `Ctrl+Alt+←` / `→` |
-| Reset Layout | — |
+| Reset Layout | none |
 
 ## Settings
 
@@ -74,11 +74,11 @@ On a host too old to have either command the chip is dropped entirely rather tha
 
 ### The two halves are independent
 
-Session profiles and the column layout share an extension, not a switch. **Enable / Disable Column Layout** governs the columns and nothing else: profiles, replay and session restore keep working with the layout off, driven only by `terminalSessions.autoRestoreSession` and the profiles you have saved. There is deliberately no master on/off — turning the extension off is what the Extensions view is for.
+Session profiles and the column layout share an extension, not a switch. **Enable / Disable Column Layout** governs the columns and nothing else: profiles, replay and session restore keep working with the layout off, driven only by `terminalSessions.autoRestoreSession` and the profiles you have saved. There is deliberately no master on/off. Turning the extension off is what the Extensions view is for.
 
 Disabling the layout sticks. It outranks `layout.autoEnableEverywhere`, so a workspace you turned it off in stays off across reloads rather than being re-enabled by the blanket default.
 
-While the layout is enabled, four settings are managed at **global** scope and restored on disable: `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`, `terminal.integrated.persistentSessionReviveProcess` (widened to `onExitAndWindowClose`, without which terminals are lost when a window closes rather than the whole application), and `workbench.panel.opensMaximized` (pinned to `never` — its default reopens the panel maximized if it was maximized when last closed, which would hide the editor column with no chip click and from runtime state no API can read).
+While the layout is enabled, four settings are managed at **global** scope and restored on disable: `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`, `terminal.integrated.persistentSessionReviveProcess` (widened to `onExitAndWindowClose`, without which terminals are lost when a window closes rather than the whole application), and `workbench.panel.opensMaximized` (pinned to `never`, because its default reopens the panel maximized if it was maximized when last closed, which would hide the editor column with no chip click and from runtime state no API can read).
 
 ## Why profiles are declared rather than captured
 
@@ -115,7 +115,7 @@ npm run publish:patch    # or bump, tag and publish in one step
 npm run publish:openvsx  # Open VSX, for VSCodium and friends
 ```
 
-Add the release notes to `CHANGELOG.md` before bumping — the marketplace renders it as the extension's
+Add the release notes to `CHANGELOG.md` before bumping. The marketplace renders it as the extension's
 *Changelog* tab. The icon at `media/icon.png` is generated from `media/terminal-sessions.svg`.
 
 ## License
