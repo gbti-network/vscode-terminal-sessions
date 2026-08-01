@@ -9,7 +9,7 @@ import { launchProfile, markHandled, replayCommands, wasHandled } from './profil
 import { ProfileMirror } from './profiles/mirror';
 import { registerSavedSessionProfile } from './profiles/provider';
 import { deleteProfile, getProfiles } from './profiles/registry';
-import { migrateCommand, offerMigration } from './profiles/migrate';
+import { migrateCommand } from './profiles/migrate';
 import { ProfileItem, ProfileTreeProvider } from './profiles/tree';
 import { ProfileManager } from './profiles/manager';
 import { listWslDistros } from './profiles/wsl';
@@ -301,10 +301,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     // writes the managed settings on the transition.
     setTimeout(() => void engine?.enable(), 1200);
   }
-
-  // Offered after the window settles, so it does not compete with startup
-  // restore for attention.
-  setTimeout(() => void offerMigration(context), 4000);
 
   if (config.get<boolean>('autoRestoreSession', true)) {
     // Wait for VS Code's own terminal revival to finish, otherwise the revived

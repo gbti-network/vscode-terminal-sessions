@@ -2,7 +2,7 @@
   "name": "gbti-terminal-sessions",
   "displayName": "Terminal Session Profiles",
   "description": "Save terminal sessions as reusable profiles (shell, directory and startup commands) and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "GBTI",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -355,7 +355,7 @@
             "Save new profiles in this project's .vscode/settings.json, so they appear only here.",
             "Save new profiles in your user settings, so they appear in every project."
           ],
-          "markdownDescription": "Where a **newly created** profile is saved.\n\nThe sidebar always shows this project's profiles plus any global ones, whichever is chosen. Editing an existing profile rewrites it where it already lives, so this never moves one behind your back; use **Move Global Profiles into This Workspace** for that.\n\nFalls back to global in a window with no folder open, where workspace settings cannot be written."
+          "markdownDescription": "The scope a **new** profile starts at.\n\nEach profile carries its own scope, set from the **Saved in** control in the profile editor; this only seeds the initial value. The sidebar always lists this project's profiles plus any global ones, marking the global ones.\n\nFalls back to global in a window with no folder open, where workspace settings cannot be written."
         },
         "terminalSessions.instanceProfiles": {
           "type": "array",

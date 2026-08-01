@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { InstanceProfile, isValidProfile } from './types';
-import { deleteProfile, getProfiles, saveProfile } from './registry';
+import { deleteProfile, getProfiles, hasWorkspace, profileScope, saveProfile, scopeOf } from './registry';
 import { listWslDistros } from './wsl';
 import { ProfileMirror } from './mirror';
 import { defaultDraft } from './author';
@@ -107,7 +107,22 @@ export class ProfileManager {
       profiles: getProfiles(),
       distros,
       select,
+      ...ProfileManager.scopeInfo(),
     });
+  }
+
+  /**
+   * Where each profile lives, plus whether workspace scope is even available.
+   *
+   * Sent with every state push so the editor's scope control reflects reality
+   * rather than guessing from the default.
+   */
+  private static scopeInfo() {
+    const scopes: Record<string, string> = {};
+    for (const profile of getProfiles()) {
+      scopes[profile.name] = scopeOf(profile.name) ?? 'workspace';
+    }
+    return { scopes, canScopeToWorkspace: hasWorkspace(), defaultScope: profileScope() };
   }
 
   private postChrome(): void {
@@ -136,6 +151,7 @@ export class ProfileManager {
       profiles: getProfiles(),
       distros,
       draft,
+      ...ProfileManager.scopeInfo(),
     });
   }
 
@@ -151,7 +167,7 @@ export class ProfileManager {
         if (message.originalName && message.originalName !== profile.name) {
           await deleteProfile(message.originalName);
         }
-        await saveProfile(profile);
+        await saveProfile(profile, message.scope === 'global' ? 'global' : 'workspace');
         await this.mirror.sync(profile, message.originalName);
         this.onSaved(profile);
         await this.refresh(profile.name);
@@ -237,6 +253,17 @@ export class ProfileManager {
       <label for="cwd">Working directory</label>
       <input id="cwd" type="text" placeholder="/mnt/d/projects/example">
       <p class="hint" id="cwd-hint">Linux path when a distro is selected.</p>
+
+      <label for="scope">Saved in</label>
+      <select id="scope">
+        <option value="workspace">This project only</option>
+        <option value="global">Every project (global)</option>
+      </select>
+      <p class="hint" id="scope-hint">
+        A profile usually names one project's directory and runs its commands, so this project is
+        the default. Change it here to move the profile; saving writes it to the new place and
+        removes it from the old.
+      </p>
 
       <label class="check">
         <input id="dropdown" type="checkbox">

@@ -26,9 +26,10 @@ A profile is a named recipe. Create one from the sidebar's **＋**, or right-cli
 
 A profile is usually *about* a project: it names that project's directory and runs that project's commands. So by default a new profile is saved to the project's `.vscode/settings.json` and appears only there.
 
-- **`terminalSessions.profileScope`** switches new profiles to `global` (your user settings) for the handful that genuinely are portable.
+- **Each profile carries its own scope**, set from the **Saved in** control in the profile editor. Change it there and the profile moves when you save.
 - The sidebar always shows this project's profiles **plus** any global ones, with the global ones marked, so it is obvious which follow you between projects.
-- Editing a profile rewrites it where it already lives. Nothing changes scope behind your back. **Move Global Profiles into This Workspace** does it deliberately, and the same offer appears once per workspace if global profiles are found.
+- **`terminalSessions.profileScope`** only seeds the scope a new profile starts at.
+- To move several at once, run **Move Global Profiles into This Workspace** from the palette.
 - A workspace profile shadows a global one of the same name, matching how settings behave elsewhere in VS Code.
 
 Profiles mirrored into the terminal `+` dropdown are written at their own scope too, so a project's profile does not turn up in another project's dropdown.

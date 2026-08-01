@@ -78,18 +78,33 @@ export function scopeOf(name: string): ProfileScope | undefined {
 }
 
 /**
- * Add or replace a profile by name.
+ * Add or replace a profile by name, optionally moving it to another scope.
  *
- * An existing profile is rewritten where it already lives, so editing one never
- * silently moves it or leaves a shadowing copy behind. Only a genuinely new
- * profile follows `terminalSessions.profileScope`, and even that falls back to
- * global in a window with no folder open, where workspace settings cannot be
- * written at all.
+ * `target` is what the editor's own scope control sends, so changing it there
+ * moves the profile. Without one, an existing profile is rewritten where it
+ * already lives and a new one follows `terminalSessions.profileScope`. Either
+ * way this falls back to global in a window with no folder open, where
+ * workspace settings cannot be written at all.
+ *
+ * A move writes the removal first, so the profile is never briefly present at
+ * both scopes, where the workspace copy would shadow the global one.
  */
-export async function saveProfile(profile: InstanceProfile): Promise<void> {
-  const target = scopeOf(profile.name) ?? (hasWorkspace() ? profileScope() : 'global');
-  await writeAt(target, [
-    ...readAt(target).filter((other) => other.name !== profile.name),
+export async function saveProfile(
+  profile: InstanceProfile,
+  target?: ProfileScope,
+): Promise<void> {
+  const current = scopeOf(profile.name);
+  const wanted = target ?? current ?? profileScope();
+  const scope: ProfileScope = wanted === 'workspace' && !hasWorkspace() ? 'global' : wanted;
+
+  if (current && current !== scope) {
+    await writeAt(
+      current,
+      readAt(current).filter((other) => other.name !== profile.name),
+    );
+  }
+  await writeAt(scope, [
+    ...readAt(scope).filter((other) => other.name !== profile.name),
     profile,
   ]);
 }

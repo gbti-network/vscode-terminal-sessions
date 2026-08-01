@@ -4,6 +4,20 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2026-08-01
+
+### Changed
+
+- **Scope is set per profile, in the editor.** The profile form has a **Saved in** control naming
+  where that profile lives, and changing it moves the profile on save. Scope is a property of a
+  profile rather than a one-time migration, so it belongs on the profile.
+- **The startup migration notice is gone.** A toast interrupted before there was any context for the
+  question. Moving several profiles at once is still available from the palette as *Move Global
+  Profiles into This Workspace*, and `terminalSessions.profileScope` now only seeds the scope a new
+  profile starts at.
+- With no folder open the **Saved in** control is disabled and explains why, rather than offering a
+  choice that would be silently ignored.
+
 ## [0.3.0] - 2026-08-01
 
 ### Changed

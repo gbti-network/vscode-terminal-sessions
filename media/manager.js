@@ -16,6 +16,8 @@
     launch: document.getElementById('launch'),
     remove: document.getElementById('delete'),
     dropdown: document.getElementById('dropdown'),
+    scope: document.getElementById('scope'),
+    scopeHint: document.getElementById('scope-hint'),
   };
 
   /** @type {{profiles: any[], distros: string[], selected: string|null, originalName: string|null}} */
@@ -185,9 +187,31 @@
     renderDistros(profile.distro);
     el.cwd.value = profile.cwd || '';
     el.dropdown.checked = Boolean(profile.showInDropdown);
+    renderScope(name);
     renderCommands(profile.commands || []);
     el.form.classList.remove('hidden');
     renderList();
+  }
+
+  /**
+   * Show where this profile is saved.
+   *
+   * Falls back to the configured default for a new one. With no folder open
+   * there is nowhere to write workspace settings, so the choice is removed
+   * rather than offered and silently ignored.
+   */
+  function renderScope(name) {
+    var value = (name && state.scopes && state.scopes[name]) || state.defaultScope || 'workspace';
+    if (!state.canScopeToWorkspace) {
+      value = 'global';
+    }
+    el.scope.value = value;
+    el.scope.disabled = !state.canScopeToWorkspace;
+    if (el.scopeHint) {
+      el.scopeHint.textContent = state.canScopeToWorkspace
+        ? 'A profile usually names one project\u2019s directory and runs its commands, so this project is the default. Change it here to move the profile: saving writes it to the new place and removes it from the old.'
+        : 'No folder is open, so there is nowhere to write project settings. This profile will be saved globally.';
+    }
   }
 
   function draft(values) {
@@ -197,6 +221,7 @@
     renderDistros((values && values.distro) || '');
     el.cwd.value = (values && values.cwd) || '';
     el.dropdown.checked = Boolean(values && values.showInDropdown);
+    renderScope(null);
     renderCommands((values && values.commands) || []);
     el.form.classList.remove('hidden');
     renderList();
@@ -245,7 +270,12 @@
       el.name.focus();
       return;
     }
-    vscode.postMessage({ type: 'save', profile, originalName: state.originalName });
+    vscode.postMessage({
+      type: 'save',
+      profile,
+      originalName: state.originalName,
+      scope: el.scope.value,
+    });
   });
 
   el.launch.addEventListener('click', () => {
@@ -276,6 +306,9 @@
     }
     state.profiles = message.profiles || [];
     state.distros = message.distros || [];
+    state.scopes = message.scopes || {};
+    state.defaultScope = message.defaultScope || 'workspace';
+    state.canScopeToWorkspace = message.canScopeToWorkspace !== false;
 
     if (message.draft) {
       draft(message.draft);
