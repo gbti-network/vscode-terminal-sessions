@@ -163,6 +163,36 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     await openManager().newDraft();
   });
   register('terminalSessions.profiles.refresh', () => tree.refresh());
+
+  /**
+   * Put the Session Profiles view back when its icon has gone missing.
+   *
+   * VS Code persists which container a view lives in, and moves an orphaned
+   * view to a default container when its own container id stops existing. A
+   * container left with no views is then hidden, so the activity bar icon
+   * disappears with it. There is no API to read or set a view's location, so
+   * recovery has to go through VS Code's own commands.
+   *
+   * `<viewId>.focus` is generated for every contributed view and reveals it
+   * wherever it currently is, which is enough when it has merely been moved.
+   * Resetting locations is the fallback, and is offered rather than done,
+   * because it moves every view in the window and not just this one.
+   */
+  register('terminalSessions.profiles.reveal', async () => {
+    try {
+      await vscode.commands.executeCommand('terminalSessions.profiles.focus');
+      return;
+    } catch {
+      // Fall through to the reset offer.
+    }
+    const choice = await vscode.window.showWarningMessage(
+      'The Session Profiles view could not be revealed. Resetting view locations puts every view back in its own container, including this one.',
+      'Reset View Locations',
+    );
+    if (choice) {
+      await vscode.commands.executeCommand('workbench.action.resetViewLocations');
+    }
+  });
   register('terminalSessions.profiles.moveToWorkspace', () => migrateCommand(context));
 
   register('terminalSessions.profiles.edit', async (item?: ProfileItem) => {

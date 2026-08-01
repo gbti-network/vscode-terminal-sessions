@@ -5,6 +5,16 @@ import { getProfiles, scopeOf } from './registry';
 /**
  * The profile list, as a sidebar view.
  *
+ * **The view id `terminalSessions.profiles` and its container id
+ * `terminalSessions` are frozen.** VS Code persists which container a view
+ * lives in, keyed by these ids, and relocates an orphaned view to a default
+ * container when its own container id stops existing. A container left with no
+ * views is hidden, so renaming either id makes the activity bar icon vanish for
+ * everyone who already had the extension, and leaves a dead slot behind. This
+ * has already happened once: `workbench.view.extension.kanban` still holds a
+ * slot in existing installs from before the rename to `terminalSessions`.
+ * Treat both ids as public API.
+ *
  * A tree rather than a webview: the sidebar is too narrow for the editor form,
  * and a tree gets native styling, keyboard navigation and inline actions for
  * free. Clicking a profile opens the full editor in an editor tab; the inline

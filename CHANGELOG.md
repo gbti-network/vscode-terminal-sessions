@@ -4,6 +4,17 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2026-08-01
+
+### Added
+
+- **Show Session Profiles View**, for when the activity bar icon has gone missing. VS Code persists
+  which container a view lives in and relocates an orphaned view to a default container when its own
+  container id stops existing; a container left with no views is then hidden, taking the icon with
+  it. The command reveals the view wherever it currently is, and offers to reset view locations if
+  that fails. Nothing in the extension can read or set a view's location, so recovery has to go
+  through VS Code's own commands.
+
 ## [0.3.1] - 2026-08-01
 
 ### Changed

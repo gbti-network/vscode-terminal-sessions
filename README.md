@@ -38,6 +38,12 @@ Commands run in order once shell integration reports ready. **Every command but 
 
 ![Every field at once: the profile editor with name, shell, working directory and an ordered command list](.product/public/02-editor.png)
 
+### If the activity bar icon disappears
+
+VS Code remembers which container each view lives in, and moves a view to a default container if its own container id ever stops existing. A container left with no views is hidden, so the icon goes with it. Run **Show Session Profiles View** from the palette: it reveals the view wherever it currently is, and offers to reset view locations if it cannot. Dragging the view back out of the Explorer works too.
+
+Extensions cannot read or set view locations, so this is recovery rather than prevention. The ids `terminalSessions` and `terminalSessions.profiles` are frozen for exactly this reason.
+
 ### Restoring after a restart
 
 Out of the box, closing a VS Code **window** loses your terminals entirely. `terminal.integrated.persistentSessionReviveProcess` defaults to `onExit`, which means *application* exit, so a window close or a stopped debug session takes them with it. Terminal Sessions widens that to `onExitAndWindowClose`, and that alone is what makes the tabs come back.
@@ -72,6 +78,7 @@ On a host too old to have either command the chip is dropped entirely rather tha
 | Manage Instance Profiles | none |
 | New Instance Profile / Open Profile / Edit Profile | none |
 | Move Global Profiles into This Workspace | none |
+| Show Session Profiles View | none |
 | Save as Instance Profile | terminal right-click |
 | Restore Last Session | status-bar chip |
 | Toggle Files / Editor / Terminal / Chat | `Ctrl+Alt+1` / `2` / `3` / `4` |
