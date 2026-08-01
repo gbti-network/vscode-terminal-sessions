@@ -1,8 +1,7 @@
 # Terminal Session Profiles
 
-[![Visual Studio Marketplace](https://img.shields.io/visual-studio-marketplace/v/GBTI.gbti-terminal-sessions?label=marketplace&color=4ee39a)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/GBTI.gbti-terminal-sessions?label=installs&color=4ee39a)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
-[![Rating](https://img.shields.io/visual-studio-marketplace/stars/GBTI.gbti-terminal-sessions?label=rating&color=4ee39a)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions&ssr=false#review-details)
+[![VS Marketplace](https://vsmarketplacebadges.dev/version-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
+[![Installs](https://vsmarketplacebadges.dev/installs-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
 [![License](https://img.shields.io/badge/license-MIT-4ee39a)](LICENSE)
 
 Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
