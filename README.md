@@ -2,17 +2,26 @@
 
 Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
 
-```
-┌──────────────────────────┐   ┌─────────────┬───────────────────────────────┐
-│ SESSION PROFILES    ＋ ⟳ │   │ PROFILES  ＋│ Name    [Alpha            ]   │
-│  🖧 Alpha         ▶ ✎    │   │ ▸ Alpha     │ Shell   [Ubuntu (WSL)    ▾]   │
-│    Ubuntu · claude --c…  │   │   Beta      │ Cwd     [/mnt/d/…/crowmac ]   │
-│  ▣ Beta           ▶ ✎    │   │             │ ☑ Show in terminal dropdown   │
-│    host shell · npm run… │   │             │ Commands                      │
-└──────────────────────────┘   │             │  1 [claude --continue] ↑↓✕    │
-   sidebar: navigate + launch  │             │  2 [npm run watch    ] ↑↓✕    │
-                               └─────────────┴───────────────────────────────┘
-                                            the editor: everything at once
+```text
++------------------------------------+
+| SESSION PROFILES             +   ~ |
+|   Alpha                    [>] [/] |
+|     Ubuntu . claude --continue     |
+|   Beta                     [>] [/] |
+|     host shell . npm run watch     |
++------------------------------------+
+  the sidebar: navigate and launch
+
++------------+-----------------------+
+| PROFILES + | Name  [Alpha        ] |
+| > Alpha    | Shell [Ubuntu (WSL) ] |
+|   Beta     | Cwd   [/mnt/d/../app] |
+|            | [x] Show in dropdown  |
+|            | Commands              |
+|            |  1 [claude --continue]|
+|            |  2 [npm run watch    ]|
++------------+-----------------------+
+  the editor: every field at once
 ```
 
 ## Session profiles
@@ -102,7 +111,7 @@ Every dependency is pure JavaScript and the build is plain `tsc`, deliberately: 
 
 ### Publishing
 
-Published to the Visual Studio Marketplace as **`GBTI.terminal-sessions`**. Authenticate once with a
+Published to the Visual Studio Marketplace as **`GBTI.gbti-terminal-sessions`**. Authenticate once with a
 [personal access token](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#get-a-personal-access-token)
 scoped to *Marketplace → Manage* for the `gbti-network` Azure DevOps organisation:
 

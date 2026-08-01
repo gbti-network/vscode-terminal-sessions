@@ -10,7 +10,12 @@ parentheses for an aside, a colon to introduce an explanation, a full stop or se
 independent statements, a new sentence for a trailing afterthought.
 
 Hyphens in compound words (`built-in`, `read-only`, `per-workspace`) are fine, as are the `---`
-fences of YAML frontmatter and horizontal rules. The rule covers Markdown only, not code comments.
+fences of YAML frontmatter and horizontal rules.
+
+The rule also covers **user-facing strings that ship**: the `description`, `markdownDescription`,
+command titles and setting help in `package.json`, plus webview and notification copy. Those are
+rendered on the marketplace and in the settings UI, so they are read more often than the README.
+Code comments are not covered.
 
 ## Commits
 

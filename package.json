@@ -1,7 +1,7 @@
 {
-  "name": "terminal-sessions",
+  "name": "gbti-terminal-sessions",
   "displayName": "Terminal Sessions",
-  "description": "Save terminal sessions as reusable profiles — shell, directory and startup commands — and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
+  "description": "Save terminal sessions as reusable profiles (shell, directory and startup commands) and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
   "version": "0.2.0",
   "publisher": "GBTI",
   "license": "MIT",
@@ -308,11 +308,11 @@
                   "auxiliaryBar",
                   "editor"
                 ],
-                "markdownDescription": "Which workbench container this column controls.\n\n`editor` is not independent of the others: VS Code hides the editor area by **maximizing the panel** over it, so the editor's space goes to the `panel` column and the two can never be hidden together. Hiding the editor reveals the panel if it was closed.\n\nWhichever columns you list, one always stays visible — the last one refuses to hide."
+                "markdownDescription": "Which workbench container this column controls.\n\n`editor` is not independent of the others: VS Code hides the editor area by **maximizing the panel** over it, so the editor's space goes to the `panel` column and the two can never be hidden together. Hiding the editor reveals the panel if it was closed.\n\nWhichever columns you list, one always stays visible: the last one refuses to hide."
               },
               "viewId": {
                 "type": "string",
-                "markdownDescription": "Command run when revealing, choosing which view appears — e.g. `workbench.view.explorer` or `workbench.view.scm`."
+                "markdownDescription": "Command run when revealing, choosing which view appears, for example `workbench.view.explorer` or `workbench.view.scm`."
               },
               "position": {
                 "type": "string",
@@ -331,7 +331,7 @@
         "terminalSessions.layout.autoEnable": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Bring the column layout back on startup if it was enabled when the window closed. Affects the columns only — session profiles and restore are independent and have no on/off switch.\n\nA layout you turned off with **Disable Column Layout** stays off regardless."
+          "markdownDescription": "Bring the column layout back on startup if it was enabled when the window closed. Affects the columns only. Session profiles and restore are independent and have no on/off switch.\n\nA layout you turned off with **Disable Column Layout** stays off regardless."
         },
         "terminalSessions.autoEnable": {
           "type": "boolean",
@@ -342,7 +342,7 @@
         "terminalSessions.instanceProfiles": {
           "type": "array",
           "default": [],
-          "markdownDescription": "Saved terminal recipes. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally** — write `claude --continue` to rejoin the most recent conversation in `cwd`, or `claude --resume <id>` for an exact one.",
+          "markdownDescription": "Saved terminal recipes. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally**: write `claude --continue` to rejoin the most recent conversation in `cwd`, or `claude --resume <id>` for an exact one.",
           "items": {
             "type": "object",
             "required": [
@@ -375,7 +375,7 @@
               },
               "commands": {
                 "type": "array",
-                "markdownDescription": "Commands run in order once the shell is ready. Every command but the last is awaited, so a long-running process such as `claude` belongs last.\n\nEither a plain string, or `{ \"run\": \"...\", \"waitMs\": 5000 }` to override how long to allow before that command runs — on the first command that is how long shell integration is given to activate; on later ones it caps how long the previous may take. Default 3000.",
+                "markdownDescription": "Commands run in order once the shell is ready. Every command but the last is awaited, so a long-running process such as `claude` belongs last.\n\nEither a plain string, or `{ \"run\": \"...\", \"waitMs\": 5000 }` to override how long to allow before that command runs. On the first command that is how long shell integration is given to activate; on later ones it caps how long the previous may take. Default 3000.",
                 "items": {
                   "anyOf": [
                     {
@@ -418,7 +418,7 @@
         "terminalSessions.layout.autoEnableEverywhere": {
           "type": "boolean",
           "default": true,
-          "markdownDescription": "Bring the column layout up in every workspace, including ones where it has never been enabled. Set to `false` to opt in per project by clicking a chip.\n\nAffects the columns only. **Disable Column Layout** still wins in the workspace where you ran it — an explicit choice is not overridden by this."
+          "markdownDescription": "Bring the column layout up in every workspace, including ones where it has never been enabled. Set to `false` to opt in per project by clicking a chip.\n\nAffects the columns only. **Disable Column Layout** still wins in the workspace where you ran it, so an explicit choice is not overridden by this."
         },
         "terminalSessions.autoEnableEverywhere": {
           "type": "boolean",
