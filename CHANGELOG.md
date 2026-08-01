@@ -4,6 +4,16 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4] - 2026-08-01
+
+### Fixed
+
+- Marketplace badges rendered the words "retired badge". shields.io retired its
+  `visual-studio-marketplace` endpoints, and they still answer 200, so the breakage was invisible to
+  a status check. Now served by `vsmarketplacebadges.dev`, which is on the marketplace badge
+  allowlist. The rating badge is gone until there are ratings, since "0/5 (0)" reads as a bad score
+  rather than an absent one.
+
 ## [0.2.3] - 2026-07-31
 
 ### Fixed
