@@ -4,6 +4,112 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-08-02
+
+An adversarial audit of the source raised 36 findings across six dimensions. Two were refuted; the
+rest collapse to 25 distinct defects, all of which had shipped. This release fixes them and adds the
+test suite that would have caught them.
+
+### Fixed: data loss
+
+- **A failed workspace write destroyed every global profile.** When a write to `.vscode/settings.json`
+  failed, the fallback re-issued *the workspace list* at global scope. VS Code replaces array settings
+  wholesale, so every global profile in every project was replaced by that project's list, and an
+  empty workspace list deleted the global key outright. The notice said the profile "was saved
+  globally instead", which described something that had not happened. This fallback was added in 0.3.3
+  to fix Save failing silently; the fix for a silent no-op was silent destruction. Scope is now chosen
+  before any write, and a write that fails is reported rather than retried somewhere else.
+- **Moving profiles into a workspace could delete them.** *Move Global Profiles into This Workspace*
+  wrote the workspace list and then stripped the moved names from global regardless of whether the
+  first write landed. A name the workspace already used was skipped from the write and removed from
+  global anyway, so it was destroyed while the toast reported it as moved. Skipped names are now named
+  in the result and left where they are.
+- **Saving over an existing name silently merged two profiles.** There was no uniqueness check
+  anywhere. Renaming `api` onto `web` deleted `api` and overwrote `web`; a new profile typed with an
+  existing name overwrote it too. Deleting has always shown a modal; overwriting should not be
+  quieter, and now asks.
+- **Deleting a profile also deleted the global one it shadowed.** Delete looped both scopes by name.
+  It now removes the profile the user can actually see, at the scope it lives at.
+- **Renaming deleted the old profile before writing the new one**, so a failed write lost both. The
+  new entry is written first.
+- **Disable left the extension's own settings behind permanently.** The snapshot recorded an unset key
+  as `undefined`; extension state crosses to the host as JSON, which drops those properties, so the
+  snapshot came back empty and the next activation captured this extension's overrides as the user's
+  baseline. `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`,
+  `persistentSessionReviveProcess` and `workbench.panel.opensMaximized` were then written into global
+  settings.json for good, surviving uninstall. Captured keys and captured values are now recorded
+  separately, an unset key is restored by removal rather than by pinning our default, and the snapshot
+  is kept if a restore write fails instead of being discarded with it.
+- **The snapshot is stored globally**, matching the scope of the settings it protects. Per-workspace
+  storage meant enabling the layout in a second folder captured the first folder's overrides.
+- **The profile editor dropped `shellPath` and `shellArgs` from every save**, including a save that
+  changed nothing, so a hand-authored host-shell profile fell back to the default shell. Fields the
+  form does not render now survive a round trip.
+- **Profiles the extension could not parse were pruned by the next write.** A hand-authored entry with
+  a typo belonged to the user and is now carried through untouched.
+- **Deleting a mirrored profile could remove a native terminal profile the user wrote.** Ownership
+  records the scope it was written at, not just the name.
+- **The Delete button could do nothing after you confirmed it.** Only the save path caught write
+  failures, so a rejected delete was an unhandled rejection with no message.
+
+### Fixed: live processes and unintended execution
+
+- **A profile's commands could be typed into a terminal it did not own.** The replay listener matched
+  on the terminal's *name* alone, so it fired into a terminal VS Code had revived with the user's own
+  process still running in it, and into any hand-opened shell that happened to share a profile name.
+  This is the exact case session restore goes to the trouble of detecting by process id and
+  deliberately leaving alone. Replay is now gated on having asked VS Code to create that terminal.
+- **Opening a profile from the terminal `+` dropdown ran every command twice**, because a second
+  listener was registered per request and neither knew about the other. There is one replay path now.
+- **Restore could dispose a live terminal.** It matched the first terminal of a given name while only
+  the most recent process id was recorded, so with two same-named terminals the older, live one failed
+  the check and was disposed. All name matches are considered, and a profile with no recorded process
+  id is left alone rather than disposed on an absence of evidence.
+- **Restore had no re-entrancy guard**, so running it from the palette during the startup pass had two
+  passes disposing and relaunching each other's terminals.
+
+### Fixed: the editor area disappearing at startup
+
+- **The editor column hid itself about a second after every window opened.** The cache of what had
+  been applied is empty on activation, so a column stored visible read as a change, and the editor's
+  only lever is a toggle: it hid a perfectly visible editor area and maximized the panel over it. The
+  chip renders from stored state, which still said visible, so it stayed inverted for the session and
+  *Reset Layout* reproduced it. The cache is now seeded with what a window is known to open with.
+- A column whose workbench command failed is no longer recorded as applied, which left a permanently
+  dead, inverted chip with no message.
+
+### Changed
+
+- **Disable reveals what it hid.** It restored the settings but left every hidden container hidden,
+  with the chips gone and nothing on screen to bring them back.
+- **Reset Layout respects an explicit Disable** rather than re-asserting the whole layout in a
+  workspace where the layout was turned off, then removing the chips needed to undo it.
+- **`Ctrl+Alt+Left` and `Ctrl+Alt+Right` only bind while the layout is enabled.** They shadowed *Move
+  Editor into Next/Previous Group* for everyone, including users who had turned the feature off.
+- The profile editor reloads when profiles change elsewhere, while it is in the background, so it no
+  longer writes a stale form over an external edit.
+- `showInDropdown` is declared in the settings schema, so the field the description invites you to
+  hand-edit has completion and hover.
+- Diagnostics report the snapshotted panel position rather than this extension's own override, which
+  is the one thing the diagnostic is needed for.
+- `terminalSessions.columns` names all four defaults. It had said three since the editor column
+  shipped.
+
+### Added
+
+- **A test suite, and no new dependencies to run it.** `npm test` compiles and runs `node --test`
+  against `src/core/`, a module that imports nothing from `vscode`: the scope arithmetic for profiles
+  and the settings snapshot both live there as plain functions over values. That is where the
+  destructive defects were, and none of them needed a running editor to reproduce. Twenty-four cases,
+  each named for the finding it pins down.
+
+### Known and unfixed
+
+- `terminalSessions.restoreDelayMs` is still a fixed wait for VS Code's own terminal revival. If it
+  expires early you get a duplicate tab per profile, and nothing reconciles afterwards.
+- A mirrored non-WSL profile opens in the workspace root rather than its working directory. VS Code's
+  native terminal profile schema has no field for one.
+
 ## [0.4.4] - 2026-08-01
 
 ### Added

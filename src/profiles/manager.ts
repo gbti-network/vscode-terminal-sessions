@@ -1,6 +1,14 @@
 import * as vscode from 'vscode';
 import { InstanceProfile, isValidProfile } from './types';
-import { deleteProfile, getProfiles, hasWorkspace, profileScope, saveProfile, scopeOf } from './registry';
+import {
+  deleteProfile,
+  getProfiles,
+  hasWorkspace,
+  profileScope,
+  saveProfile,
+  scopeOf,
+  wouldOverwrite,
+} from './registry';
 import { listWslDistros } from './wsl';
 import { ProfileMirror } from './mirror';
 import { defaultDraft } from './author';
@@ -65,6 +73,18 @@ export class ProfileManager {
     this.disposables.push(
       this.panel.webview.onDidReceiveMessage((message) => void this.handle(message)),
       this.panel.onDidDispose(() => this.dispose()),
+      // Profiles are settings, and settings are editable in another tab, by
+      // another window, or by settings sync. Without this the open editor showed
+      // a stale list indefinitely and its next Save wrote that stale form back
+      // over whatever had changed.
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        // Only while this tab is in the background. Rewriting the form under
+        // someone who is typing in it would be a worse bug than the stale view
+        // this fixes, and the view re-reads whatever it finds when they return.
+        if (event.affectsConfiguration('terminalSessions.instanceProfiles') && !this.panel.active) {
+          void this.refresh();
+        }
+      }),
     );
 
     void this.refresh();
@@ -163,15 +183,31 @@ export class ProfileManager {
           void vscode.window.showErrorMessage('A profile needs a name and at least one command.');
           return;
         }
+        // Save is the only destructive action in this editor that never asked.
+        // Typing an existing name, whether renaming onto it or creating a new
+        // profile with it, silently collapsed two profiles into one. Delete has
+        // a modal; overwriting should not be quieter than deleting.
+        if (wouldOverwrite(profile.name, message.originalName)) {
+          const confirm = await vscode.window.showWarningMessage(
+            `A profile named "${profile.name}" already exists. Saving replaces it.`,
+            { modal: true },
+            'Replace',
+          );
+          if (confirm !== 'Replace') {
+            return;
+          }
+        }
         // Wrapped because a settings write can fail, and an unhandled rejection
         // here means the button appears to do nothing at all: no profile, no
         // error, no clue. Saying why is the minimum.
         try {
-          // Renaming means the old entry has to go, or both would linger.
+          await saveProfile(profile, message.scope === 'global' ? 'global' : 'workspace');
+          // Renaming means the old entry has to go, but only once the new one is
+          // safely written. Deleting first lost the profile outright whenever
+          // the write that followed it failed.
           if (message.originalName && message.originalName !== profile.name) {
             await deleteProfile(message.originalName);
           }
-          await saveProfile(profile, message.scope === 'global' ? 'global' : 'workspace');
           await this.mirror.sync(profile, message.originalName);
           this.onSaved(profile);
         } catch (error) {
@@ -191,8 +227,19 @@ export class ProfileManager {
           'Delete',
         );
         if (confirm === 'Delete') {
-          await deleteProfile(message.name);
-          await this.mirror.remove(message.name);
+          // The save branch was the only one that caught. A rejected write here
+          // was an unhandled rejection, so the button did nothing at all after
+          // the user had already confirmed a modal.
+          try {
+            await deleteProfile(message.name);
+            await this.mirror.remove(message.name);
+          } catch (error) {
+            void vscode.window.showErrorMessage(
+              `Could not delete "${message.name}": ${
+                error instanceof Error ? error.message : String(error)
+              }`,
+            );
+          }
           await this.refresh();
         }
         return;

@@ -72,6 +72,14 @@ const LEGACY_OWNED_KEY = 'kanban.mirroredProfiles';
 export class ProfileMirror {
   constructor(private readonly memento: vscode.Memento) {}
 
+  /**
+   * Names this extension wrote, tagged with the scope it wrote them at.
+   *
+   * Stored as `name@scope`. Ownership used to be a bare name, so removing a
+   * profile mirrored globally also deleted a same-named native profile the user
+   * had written in their workspace settings. A bare entry from an older version
+   * still means both scopes, which is what it meant when it was written.
+   */
   private get owned(): string[] {
     const current = this.memento.get<string[]>(OWNED_KEY);
     // Falling back matters: without it the extension would no longer recognise
@@ -80,8 +88,22 @@ export class ProfileMirror {
     return current ?? this.memento.get<string[]>(LEGACY_OWNED_KEY, []);
   }
 
+  /** Whether we wrote this name, at any scope. */
+  private ownsName(name: string): boolean {
+    return this.owned.some((entry) => entry === name || entry.startsWith(`${name}@`));
+  }
+
+  /** Whether we wrote this name at this particular scope. */
+  private ownsAt(name: string, scope: ProfileScope): boolean {
+    return this.owned.some((entry) => entry === name || entry === `${name}@${scope}`);
+  }
+
   private setOwned(names: string[]): Thenable<void> {
     return this.memento.update(OWNED_KEY, [...new Set(names)]);
+  }
+
+  private forget(name: string): string[] {
+    return this.owned.filter((entry) => entry !== name && !entry.startsWith(`${name}@`));
   }
 
   /** Add, update or remove a profile's native mirror to match `showInDropdown`. */
@@ -105,7 +127,7 @@ export class ProfileMirror {
     // Checked against the *resolved* value, because a name colliding with one
     // the user wrote at any scope is still a collision.
     const resolved = config.get<Record<string, unknown>>(key) ?? {};
-    if (resolved[profile.name] !== undefined && !this.owned.includes(profile.name)) {
+    if (resolved[profile.name] !== undefined && !this.ownsName(profile.name)) {
       void vscode.window.showWarningMessage(
         `A terminal profile named "${profile.name}" already exists in your settings and was not written to. Rename the instance profile to mirror it.`,
       );
@@ -130,21 +152,26 @@ export class ProfileMirror {
 
     profiles[profile.name] = entry;
     await config.update(key, profiles, configTarget(scope));
-    await this.setOwned([...this.owned, profile.name]);
+    await this.setOwned([...this.owned, `${profile.name}@${scope}`]);
   }
 
   async remove(name: string): Promise<void> {
-    if (!this.owned.includes(name)) {
+    if (!this.ownsName(name)) {
       return; // Never touch a profile the user wrote themselves.
     }
     const config = vscode.workspace.getConfiguration(NATIVE);
     const key = platformKey();
 
-    // Both scopes: a profile may have been mirrored globally before it moved
-    // into a workspace, and leaving the old entry behind would keep it in every
-    // project's dropdown, which is the leak this is meant to close.
+    // Both scopes are considered, because a profile may have been mirrored
+    // globally before it moved into a workspace and leaving the old entry behind
+    // would keep it in every project's dropdown. But each is only touched if we
+    // wrote it there: a same-named entry the user added at the other scope is
+    // theirs, and deleting it was the leak in reverse.
     for (const scope of ['workspace', 'global'] as const) {
       if (scope === 'workspace' && !hasWorkspace()) {
+        continue;
+      }
+      if (!this.ownsAt(name, scope)) {
         continue;
       }
       const profiles = ownValue(scope, key);
@@ -153,6 +180,6 @@ export class ProfileMirror {
         await config.update(key, profiles, configTarget(scope));
       }
     }
-    await this.setOwned(this.owned.filter((owned) => owned !== name));
+    await this.setOwned(this.forget(name));
   }
 }

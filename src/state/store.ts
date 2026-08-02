@@ -27,9 +27,18 @@ interface PersistedLayout {
    */
   enabled?: boolean;
   columns: Record<string, ColumnState>;
-  /** Settings we overrode on enable, so `disable` can put them back. */
-  savedSettings?: Record<string, unknown>;
 }
+
+/**
+ * Where the snapshot of overridden settings lives.
+ *
+ * Global, not per workspace, because the settings it protects are written at
+ * global scope. It used to sit alongside the per-workspace column state, so
+ * enabling the layout in a second folder found no snapshot there and captured
+ * the *first* folder's overrides as the user's baseline. One process-wide
+ * override cannot be tracked by N per-folder records.
+ */
+const SETTINGS_KEY = 'terminalSessions.managedSettings.v1';
 
 function empty(): PersistedLayout {
   return { version: 2, columns: {} };
@@ -60,8 +69,19 @@ export class LayoutStore {
     return this.data.enabled === false;
   }
 
-  get savedSettings(): Record<string, unknown> | undefined {
-    return this.data.savedSettings;
+  /**
+   * The snapshot taken when the layout was enabled, in whatever shape it was
+   * written. `readSnapshot` upgrades the pre-0.5.0 flat record.
+   */
+  get savedSettings(): unknown {
+    return (
+      this.context.globalState.get<unknown>(SETTINGS_KEY) ??
+      // Pre-0.5.0 snapshots were stored per workspace. Read one here so an
+      // upgrade in a workspace that already had the layout on can still restore
+      // the values it captured, rather than losing them at the version boundary.
+      (this.context.workspaceState.get<{ savedSettings?: unknown }>(KEY)?.savedSettings ??
+        this.context.workspaceState.get<{ savedSettings?: unknown }>(LEGACY_KEY)?.savedSettings)
+    );
   }
 
   /** State for a column, seeded visible on first use. */
@@ -88,15 +108,14 @@ export class LayoutStore {
     }
   }
 
-  async setSavedSettings(settings: Record<string, unknown> | undefined): Promise<void> {
-    this.data.savedSettings = settings;
-    await this.flush();
+  async setSavedSettings(settings: unknown): Promise<void> {
+    await this.context.globalState.update(SETTINGS_KEY, settings);
   }
 
   /** Drop visibility state, keeping the enabled flag. */
   async reset(): Promise<void> {
-    const { enabled, savedSettings } = this.data;
-    this.data = { ...empty(), enabled, savedSettings };
+    const { enabled } = this.data;
+    this.data = { ...empty(), enabled };
     await this.flush();
   }
 

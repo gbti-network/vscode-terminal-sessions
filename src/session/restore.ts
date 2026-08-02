@@ -35,6 +35,8 @@ interface SessionState {
  */
 export class SessionRestorer implements vscode.Disposable {
   private state: SessionState;
+  /** The pass in flight, so a second caller joins it rather than racing it. */
+  private running?: Promise<{ relaunched: string[]; kept: string[]; missing: string[] }>;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     const stored =
@@ -69,6 +71,24 @@ export class SessionRestorer implements vscode.Disposable {
    * silently rearranging the user's terminals.
    */
   async restore(): Promise<{ relaunched: string[]; kept: string[]; missing: string[] }> {
+    // One pass at a time. Startup schedules this on a timer and the palette
+    // offers it as a command, so a user running it while the startup pass is
+    // still launching had two passes reading the same list, each disposing and
+    // relaunching what the other had just made.
+    if (this.running) {
+      return this.running;
+    }
+    this.running = this.runRestore().finally(() => {
+      this.running = undefined;
+    });
+    return this.running;
+  }
+
+  private async runRestore(): Promise<{
+    relaunched: string[];
+    kept: string[];
+    missing: string[];
+  }> {
     const relaunched: string[] = [];
     const kept: string[] = [];
     const missing: string[] = [];
@@ -77,19 +97,42 @@ export class SessionRestorer implements vscode.Disposable {
       const profile = getProfiles().find((p) => p.name === entry.name);
       if (!profile) {
         missing.push(entry.name);
+        // Drop it rather than reporting the same absence on every window open.
+        // Nothing cleared these: `forget` is only reachable from a picker that
+        // lists profiles that still exist, so a deleted profile's entry was
+        // unreachable through the UI and complained forever. The caller still
+        // reports it once, here, which is the notice the user needs.
+        await this.forget(entry.name);
         continue;
       }
 
-      const existing = vscode.window.terminals.find((t) => t.name === entry.name);
-      if (existing) {
-        const pid = await existing.processId;
-        if (pid !== undefined && pid === entry.pid) {
-          // Same process: it genuinely survived. Leave it be.
+      // Every terminal wearing this name, not just the first. `track` records
+      // one pid per name, so with two same-named terminals the first match was
+      // often the older, live one: it failed the pid test against the newer
+      // record and was disposed while the process it held was still running.
+      const named = vscode.window.terminals.filter((t) => t.name === entry.name);
+      const pids = await Promise.all(named.map((terminal) => terminal.processId));
+
+      if (named.length) {
+        const survived = named.some(
+          (_, index) => pids[index] !== undefined && pids[index] === entry.pid,
+        );
+        if (survived) {
           kept.push(entry.name);
           continue;
         }
-        // Different pid means a revived shell wearing the old name.
-        existing.dispose();
+        if (entry.pid === undefined) {
+          // No pid was ever recorded, so there is no evidence this tab is a
+          // corpse. Disposing on an absence of evidence is how a live session
+          // gets killed; leaving a duplicate is the cheaper mistake.
+          kept.push(entry.name);
+          continue;
+        }
+        // Every match failed the pid test, so each is a revived shell wearing
+        // the name rather than the process that was launched under it.
+        for (const terminal of named) {
+          terminal.dispose();
+        }
       }
 
       const terminal = await launchProfile(profile);

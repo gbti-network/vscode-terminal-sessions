@@ -9,6 +9,7 @@
 .idea/**
 .playwright-mcp/**
 src/**
+test/**
 dist/**
 node_modules/**
 scripts/**

@@ -119,10 +119,13 @@ At the moment of the right-click there is genuinely nothing to read, so a profil
 npm install
 npm run watch     # then F5 to launch the Extension Development Host
 npm run check-types
+npm test          # compiles, then node --test
 npm run package   # produces a .vsix
 ```
 
 Every dependency is pure JavaScript and the build is plain `tsc`, deliberately: this repo lives on a Windows drive that may be driven from either Windows or WSL, and a single shared `node_modules` cannot hold a native binary that works for both. The npm scripts invoke `node ./node_modules/typescript/bin/tsc` directly rather than the `node_modules/.bin` shim, because a WSL `npm install` creates POSIX symlinks there instead of the `.cmd` shims Windows needs.
+
+Tests add no dependency either: `node --test` is built in. They run against `src/core/`, which imports nothing from `vscode` and holds the decisions worth asserting on, the scope arithmetic for saved profiles and the snapshot of settings the column layout overrides. Both are plain functions over values, and both are where this extension's worst defects have lived.
 
 ### Publishing
 

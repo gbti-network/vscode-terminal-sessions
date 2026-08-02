@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ColumnDef } from '../columns/types';
 import { getColumns } from '../columns/registry';
 import { LayoutStore } from '../state/store';
+import { captureSnapshot, readSnapshot, restoreWrites } from '../core/managed-settings';
 import {
   editorColumnSupported,
   hideColumn,
@@ -32,13 +33,17 @@ const MANAGED_SETTINGS = [
  * every project. Global also sidesteps workspace scope throwing outright in a
  * window with no folder open.
  */
-async function writeSetting(key: string, value: unknown): Promise<void> {
+async function writeSetting(key: string, value: unknown): Promise<boolean> {
   try {
     await vscode.workspace
       .getConfiguration()
       .update(key, value, vscode.ConfigurationTarget.Global);
+    return true;
   } catch {
-    // Nothing more we can do; visibility toggling still works.
+    // Visibility toggling still works, so this is not fatal. It is reported so
+    // a restore that did not land keeps its snapshot instead of discarding the
+    // only record of what the user's settings were.
+    return false;
   }
 }
 
@@ -70,6 +75,14 @@ export class LayoutEngine implements vscode.Disposable {
   }
 
   async disable(): Promise<void> {
+    // Reveal before the chips go, or a container this extension hid stays hidden
+    // with nothing left on screen to bring it back. Turning the feature off
+    // should leave the workbench as it was found, not frozen mid-layout.
+    for (const def of this.applyOrder) {
+      if (this.isHidden(def)) {
+        await revealColumn(def);
+      }
+    }
     this.disposeStatusItems();
     this.applied.clear();
     await this.restoreManagedSettings();
@@ -89,6 +102,7 @@ export class LayoutEngine implements vscode.Disposable {
    */
   async init(): Promise<void> {
     this.editorSupported = await editorColumnSupported();
+    this.seedApplied();
     this.refreshStatusBar();
   }
 
@@ -140,11 +154,41 @@ export class LayoutEngine implements vscode.Disposable {
     for (const def of this.applyOrder) {
       const hidden = this.isHidden(def);
       if (this.applied.get(def.id) !== hidden) {
-        await (hidden ? hideColumn(def) : revealColumn(def));
-        this.applied.set(def.id, hidden);
+        // Only record what actually happened. Recording unconditionally meant a
+        // column whose workbench command failed, a hand-written `viewId` that
+        // does not resolve, was remembered as applied, so the chip inverted and
+        // never recovered.
+        const ok = await (hidden ? hideColumn(def) : revealColumn(def));
+        if (ok) {
+          this.applied.set(def.id, hidden);
+        }
       }
     }
     this.refreshStatusBar();
+  }
+
+  /**
+   * Seed the cache with what the host is known to be showing already.
+   *
+   * The editor area has no absolute show command, only a toggle, so `apply` may
+   * only touch it to make a *change*. An empty cache broke exactly that: for a
+   * column stored visible, `undefined !== false` held, `apply` called
+   * `revealColumn`, and the toggle hid a perfectly visible editor about a second
+   * after every window opened. The chip renders from the store, which still said
+   * visible, so it stayed inverted for the session.
+   *
+   * A window always opens with its editor area on screen, which
+   * `workbench.panel.opensMaximized: never` (one of the managed settings) keeps
+   * true, so `false` is a fact here rather than a guess. Columns with absolute
+   * show/hide commands are left unseeded: re-asserting those is idempotent, and
+   * it is what corrects any drift from the previous session.
+   */
+  private seedApplied(): void {
+    for (const def of this.columns) {
+      if (def.kind === 'editor') {
+        this.applied.set(def.id, false);
+      }
+    }
   }
 
   /**
@@ -155,6 +199,7 @@ export class LayoutEngine implements vscode.Disposable {
    */
   async applyAll(): Promise<void> {
     this.applied.clear();
+    this.seedApplied();
     await this.apply();
   }
 
@@ -236,8 +281,20 @@ export class LayoutEngine implements vscode.Disposable {
     await this.apply();
   }
 
+  /**
+   * Put every column back to visible.
+   *
+   * Does not re-assert the layout in a workspace where it was explicitly turned
+   * off. It used to, which rearranged the workbench of someone who had said no,
+   * and then `refreshStatusBar` returned early and disposed the chips, leaving
+   * nothing on screen to undo it with.
+   */
   async reset(): Promise<void> {
     await this.store.reset();
+    if (this.store.layoutDisabled) {
+      this.refreshStatusBar();
+      return;
+    }
     await this.applyAll();
   }
 
@@ -332,13 +389,13 @@ export class LayoutEngine implements vscode.Disposable {
    */
   private async saveManagedSettings(): Promise<void> {
     const config = vscode.workspace.getConfiguration();
-    const saved: Record<string, unknown> = { ...(this.store.savedSettings ?? {}) };
-    for (const key of MANAGED_SETTINGS) {
-      if (!(key in saved)) {
-        saved[key] = config.inspect(key)?.globalValue;
-      }
-    }
-    await this.store.setSavedSettings(saved);
+    await this.store.setSavedSettings(
+      captureSnapshot(
+        readSnapshot(this.store.savedSettings, MANAGED_SETTINGS),
+        MANAGED_SETTINGS,
+        (key) => config.inspect(key)?.globalValue,
+      ),
+    );
   }
 
   private async applyManagedSettings(): Promise<void> {
@@ -364,11 +421,24 @@ export class LayoutEngine implements vscode.Disposable {
     await writeSetting('workbench.panel.opensMaximized', 'never');
   }
 
+  /**
+   * Put the user's settings back, and only forget the snapshot once they are.
+   *
+   * `writeSetting` swallows failures, so clearing the snapshot unconditionally
+   * used to lose the original values permanently whenever a write did not land:
+   * the settings stayed on this extension's values with no record of what they
+   * had been. A key captured with no value is restored as `undefined`, which
+   * removes it rather than pinning our default.
+   */
   private async restoreManagedSettings(): Promise<void> {
-    for (const [key, value] of Object.entries(this.store.savedSettings ?? {})) {
-      await writeSetting(key, value);
+    const snapshot = readSnapshot(this.store.savedSettings, MANAGED_SETTINGS);
+    let allWritten = true;
+    for (const { key, value } of restoreWrites(snapshot)) {
+      allWritten = (await writeSetting(key, value)) && allWritten;
     }
-    await this.store.setSavedSettings(undefined);
+    if (allWritten) {
+      await this.store.setSavedSettings(undefined);
+    }
   }
 
   // ------------------------------------------------------------- diagnostics
@@ -378,7 +448,12 @@ export class LayoutEngine implements vscode.Disposable {
       `VS Code ${vscode.version}`,
       `layout enabled: ${this.store.layoutEnabled}${this.store.layoutDisabled ? ' (explicitly disabled)' : ''}`,
       `editor toggle: ${(await resolveEditorToggle()) ?? 'unavailable, editor column dropped'}`,
-      `panel position: ${vscode.workspace.getConfiguration().get('workbench.panel.defaultLocation') ?? '-'}`,
+      // inspect().globalValue, not get(): while the layout is on, `get` returns
+      // this extension's own override, so the diagnostic could not be used to
+      // check what was actually snapshotted, which is the one thing a user needs
+      // it for when settings look wrong after a disable.
+      `panel position: ${vscode.workspace.getConfiguration().inspect('workbench.panel.defaultLocation')?.globalValue ?? '(unset)'}`,
+      `snapshot: ${JSON.stringify(this.store.savedSettings ?? null)}`,
       `panel alignment: ${vscode.workspace.getConfiguration().get('workbench.panel.alignment') ?? '-'}`,
       '',
       'columns:',

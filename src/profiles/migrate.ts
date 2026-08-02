@@ -29,8 +29,22 @@ export async function migrateCommand(_context: vscode.ExtensionContext): Promise
   if (!picked?.length) {
     return;
   }
-  const moved = await moveToWorkspace(picked.map((item) => item.label));
-  void vscode.window.showInformationMessage(
-    `Moved ${moved} profile${moved === 1 ? '' : 's'} into this workspace.`,
-  );
+  try {
+    const { moved, skipped } = await moveToWorkspace(picked.map((item) => item.label));
+    // Skipped names are reported rather than folded into the count. They used to
+    // be counted as moved while being deleted from global, so the toast said the
+    // profile had been migrated at the moment it stopped existing.
+    const summary = `Moved ${moved.length} profile${moved.length === 1 ? '' : 's'} into this workspace.`;
+    if (skipped.length) {
+      void vscode.window.showWarningMessage(
+        `${summary} Left in your global settings because this project already has a profile of the same name: ${skipped.join(', ')}.`,
+      );
+      return;
+    }
+    void vscode.window.showInformationMessage(summary);
+  } catch (error) {
+    void vscode.window.showErrorMessage(
+      `Could not move profiles: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
 }

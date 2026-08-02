@@ -2,7 +2,7 @@
   "name": "gbti-terminal-sessions",
   "displayName": "Terminal Session Profiles",
   "description": "Save terminal sessions as reusable profiles (shell, directory and startup commands) and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "publisher": "GBTI",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -279,12 +279,14 @@
       {
         "command": "terminalSessions.shrinkColumn",
         "key": "ctrl+alt+left",
-        "mac": "cmd+alt+left"
+        "mac": "cmd+alt+left",
+        "when": "terminalSessions.layoutEnabled"
       },
       {
         "command": "terminalSessions.growColumn",
         "key": "ctrl+alt+right",
-        "mac": "cmd+alt+right"
+        "mac": "cmd+alt+right",
+        "when": "terminalSessions.layoutEnabled"
       }
     ],
     "configuration": {
@@ -292,7 +294,7 @@
       "properties": {
         "terminalSessions.columns": {
           "type": "array",
-          "markdownDescription": "Columns to control, in status-bar order. Leave empty to use the built-in defaults (Files, Terminal, Chat).",
+          "markdownDescription": "Columns to control, in status-bar order. Leave empty to use the built-in defaults (Files, Editor, Terminal, Chat).",
           "default": [],
           "items": {
             "type": "object",
@@ -424,6 +426,10 @@
                     }
                   ]
                 }
+              },
+              "showInDropdown": {
+                "type": "boolean",
+                "description": "Mirror this profile into VS Code's terminal + dropdown."
               }
             }
           }
@@ -461,7 +467,8 @@
     "publish": "npx @vscode/vsce publish",
     "publish:patch": "npx @vscode/vsce publish patch",
     "publish:minor": "npx @vscode/vsce publish minor",
-    "publish:openvsx": "npx ovsx publish"
+    "publish:openvsx": "npx ovsx publish",
+    "test": "npm run compile && node --test test/*.test.js"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

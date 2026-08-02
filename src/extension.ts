@@ -44,25 +44,34 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // ---- instance profiles ----
 
+  /**
+   * Profiles we have asked VS Code to open a terminal for, and not yet seen.
+   *
+   * The contributed `+` dropdown entry returns *options*; VS Code creates the
+   * terminal, so the only way to replay into it is to watch for it appearing.
+   * This records that we asked. Without it the watcher had nothing to go on but
+   * the terminal's name, which matched three things it should not have: a
+   * terminal VS Code revived with a live process still in it, a terminal the
+   * user opened by hand that happens to be called `bash`, and the contributed
+   * terminal itself twice, because a second listener was registered per request
+   * and neither knew about the other.
+   *
+   * Entries expire because a request that is cancelled never produces a
+   * terminal, and a name left pending forever would replay into whatever opened
+   * with that name next.
+   */
+  const requested = new Map<string, number>();
+  const REQUEST_TTL_MS = 60_000;
+
+  const claimRequest = (name: string): boolean => {
+    const at = requested.get(name);
+    requested.delete(name);
+    return at !== undefined && Date.now() - at < REQUEST_TTL_MS;
+  };
+
   context.subscriptions.push(
     registerSavedSessionProfile((name) => {
-      // VS Code creates the terminal for a contributed profile, so the commands
-      // are replayed once it appears rather than at creation time.
-      const subscription = vscode.window.onDidOpenTerminal(async (terminal) => {
-        if (terminal.name !== name) {
-          return;
-        }
-        subscription.dispose();
-        const profile = getProfiles().find((p) => p.name === name);
-        if (!profile) {
-          return;
-        }
-        await restorer?.track(profile, terminal);
-        if (profile.commands.length) {
-          await replayCommands(terminal, profile.commands);
-        }
-      });
-      context.subscriptions.push(subscription);
+      requested.set(name, Date.now());
     }),
   );
 
@@ -75,22 +84,27 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   const mirror = new ProfileMirror(context.globalState);
 
-  // A profile mirrored into the native terminal dropdown can be opened by VS
-  // Code itself, which we only learn about here. Replay its commands so a
-  // profile behaves identically however it was launched — skipping terminals we
-  // opened ourselves, which have already replayed.
+  // The single replay path for terminals VS Code creates on our behalf.
+  //
+  // Gated on having asked for this terminal, not on its name. A name match alone
+  // typed a profile's commands into any shell that happened to share the name,
+  // including one VS Code revived with the user's own process still running in
+  // it, which is exactly the case `SessionRestorer` goes to the trouble of
+  // detecting by pid and deliberately leaving alone.
   context.subscriptions.push(
     vscode.window.onDidOpenTerminal(async (terminal) => {
-      if (wasHandled(terminal)) {
+      if (wasHandled(terminal) || !claimRequest(terminal.name)) {
         return;
       }
       const profile = getProfiles().find((p) => p.name === terminal.name);
-      if (!profile?.commands.length) {
+      if (!profile) {
         return;
       }
       markHandled(terminal);
       await restorer?.track(profile, terminal);
-      await replayCommands(terminal, profile.commands);
+      if (profile.commands.length) {
+        await replayCommands(terminal, profile.commands);
+      }
     }),
   );
 

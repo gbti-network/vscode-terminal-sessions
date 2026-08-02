@@ -183,6 +183,11 @@
     }
     state.selected = name;
     state.originalName = name;
+    // Fields this form does not render still belong to the profile. Saving used
+    // to emit only what the form knows about, so a hand-authored profile lost
+    // its shellPath and shellArgs on any save, including one that changed
+    // nothing, and fell back to VS Code's default shell.
+    state.carried = carriedFrom(profile);
     el.name.value = profile.name;
     renderDistros(profile.distro);
     el.cwd.value = profile.cwd || '';
@@ -214,9 +219,29 @@
     }
   }
 
+  /**
+   * The parts of a profile the form has no field for.
+   *
+   * Listed as "everything except what we render" rather than as a fixed set, so
+   * a field added to the schema later survives a round trip through this editor
+   * without anyone remembering to come back here.
+   */
+  const RENDERED = ['name', 'distro', 'cwd', 'commands', 'showInDropdown'];
+
+  function carriedFrom(profile) {
+    const rest = {};
+    for (const key of Object.keys(profile || {})) {
+      if (!RENDERED.includes(key)) {
+        rest[key] = profile[key];
+      }
+    }
+    return rest;
+  }
+
   function draft(values) {
     state.selected = null;
     state.originalName = null;
+    state.carried = carriedFrom(values);
     el.name.value = (values && values.name) || '';
     renderDistros((values && values.distro) || '');
     el.cwd.value = (values && values.cwd) || '';
@@ -242,6 +267,7 @@
       .filter((entry) => (typeof entry === 'string' ? entry.length > 0 : entry.run.length > 0));
 
     return {
+      ...(state.carried || {}),
       name: el.name.value.trim(),
       distro: el.distro.value || undefined,
       cwd: el.cwd.value.trim() || undefined,

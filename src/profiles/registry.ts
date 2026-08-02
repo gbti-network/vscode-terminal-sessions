@@ -1,12 +1,24 @@
 import * as vscode from 'vscode';
-import { InstanceProfile, isValidProfile } from './types';
+import { InstanceProfile } from './types';
+import {
+  collidesWith,
+  MovePlan,
+  planDelete,
+  planMove,
+  planSave,
+  ProfileScope,
+  profilesIn,
+  resolveProfiles,
+  ScopeSnapshot,
+  ScopeWrite,
+  scopeOf as scopeOfSnapshot,
+} from '../core/profiles';
 
 const SECTION = 'terminalSessions';
 const KEY = 'instanceProfiles';
 const SCOPE_KEY = 'profileScope';
 
-/** Where a profile is stored, and therefore which projects can see it. */
-export type ProfileScope = 'workspace' | 'global';
+export type { ProfileScope };
 
 /**
  * Profiles live in settings, at one of two scopes.
@@ -18,10 +30,9 @@ export type ProfileScope = 'workspace' | 'global';
  * noise. Workspace is the default now, and global remains for the handful that
  * genuinely are portable.
  *
- * Reading unions the two rather than letting VS Code resolve them. For array
- * settings VS Code does not merge, it *replaces*, so a workspace list would
- * hide the global list entirely, which is not what "workspace plus global"
- * should mean.
+ * This module is the settings adapter and nothing else. Every decision about
+ * what belongs where is made in `src/core/profiles.ts`, against plain arrays,
+ * because that is where the defects were and reading alone did not catch them.
  */
 export function profileScope(): ProfileScope {
   return vscode.workspace.getConfiguration(SECTION).get<ProfileScope>(SCOPE_KEY) === 'global'
@@ -34,35 +45,35 @@ export function hasWorkspace(): boolean {
   return (vscode.workspace.workspaceFolders?.length ?? 0) > 0;
 }
 
-function readAt(scope: ProfileScope): InstanceProfile[] {
+/**
+ * Both scopes as settings actually hold them, unfiltered.
+ *
+ * Unfiltered on purpose: an entry this version cannot parse is still the user's
+ * text, and every write has to carry it through rather than prune it.
+ *
+ * Read through `inspect` rather than `get`, because for array settings VS Code
+ * replaces rather than merges across scopes, so `get` would hide the global list
+ * entirely whenever a workspace list exists.
+ */
+function snapshot(): ScopeSnapshot {
   const values = vscode.workspace.getConfiguration(SECTION).inspect<unknown[]>(KEY);
-  const raw =
-    scope === 'global'
-      ? values?.globalValue
-      : (values?.workspaceFolderValue ?? values?.workspaceValue);
-  return Array.isArray(raw) ? raw.filter(isValidProfile) : [];
+  return {
+    workspace: values?.workspaceFolderValue ?? values?.workspaceValue ?? [],
+    global: values?.globalValue ?? [],
+  };
 }
 
 export function globalProfiles(): InstanceProfile[] {
-  return readAt('global');
+  return profilesIn(snapshot().global);
 }
 
 export function workspaceProfiles(): InstanceProfile[] {
-  return readAt('workspace');
+  return profilesIn(snapshot().workspace);
 }
 
-/**
- * Every profile visible here: this project's, plus the global ones.
- *
- * A workspace profile shadows a global one of the same name, which is how
- * settings behave everywhere else in VS Code.
- */
+/** Every profile visible here: this project's, plus the global ones. */
 export function getProfiles(): InstanceProfile[] {
-  const workspace = readAt('workspace');
-  const taken = new Set(workspace.map((profile) => profile.name));
-  return [...workspace, ...readAt('global').filter((profile) => !taken.has(profile.name))].sort(
-    (a, b) => a.name.localeCompare(b.name),
-  );
+  return resolveProfiles(snapshot());
 }
 
 export function findProfile(name: string): InstanceProfile | undefined {
@@ -71,112 +82,70 @@ export function findProfile(name: string): InstanceProfile | undefined {
 
 /** Which scope a profile currently lives in, if any. */
 export function scopeOf(name: string): ProfileScope | undefined {
-  if (readAt('workspace').some((profile) => profile.name === name)) {
-    return 'workspace';
-  }
-  return readAt('global').some((profile) => profile.name === name) ? 'global' : undefined;
+  return scopeOfSnapshot(snapshot(), name);
+}
+
+/** Whether saving under this name would collapse two profiles into one. */
+export function wouldOverwrite(name: string, originalName?: string): boolean {
+  return collidesWith(snapshot(), name, originalName);
+}
+
+function target(scope: ProfileScope): vscode.ConfigurationTarget {
+  return scope === 'global'
+    ? vscode.ConfigurationTarget.Global
+    : vscode.ConfigurationTarget.Workspace;
 }
 
 /**
- * Add or replace a profile by name, optionally moving it to another scope.
+ * Perform a plan's writes in order, stopping at the first failure.
  *
- * `target` is what the editor's own scope control sends, so changing it there
- * moves the profile. Without one, an existing profile is rewritten where it
- * already lives and a new one follows `terminalSessions.profileScope`. Either
- * way this falls back to global in a window with no folder open, where
- * workspace settings cannot be written at all.
+ * There is deliberately no cross-scope retry here. A previous version caught a
+ * failed workspace write and re-issued the *same array* at global scope, which
+ * replaced every global profile in every project with this project's list while
+ * reporting that the profile "was saved globally instead". Choosing a scope is a
+ * planning decision made before any write; a write that fails, fails, and the
+ * caller says so.
+ */
+async function applyWrites(writes: readonly ScopeWrite[]): Promise<void> {
+  const config = vscode.workspace.getConfiguration(SECTION);
+  for (const write of writes) {
+    await config.update(KEY, write.entries, target(write.scope));
+  }
+}
+
+/**
+ * Add or replace a profile, optionally moving it to another scope.
  *
- * A move writes the removal first, so the profile is never briefly present at
- * both scopes, where the workspace copy would shadow the global one.
+ * `scope` is what the editor's own control sends, so changing it there moves the
+ * profile. Without one, an existing profile is rewritten where it already lives
+ * and a new one follows `terminalSessions.profileScope`.
+ *
+ * Rejects rather than swallowing. A silent failure is what 0.3.3 set out to fix,
+ * and the fix is to report it, not to write somewhere else.
  */
 export async function saveProfile(
   profile: InstanceProfile,
-  target?: ProfileScope,
-): Promise<void> {
-  const current = scopeOf(profile.name);
-  const wanted = target ?? current ?? profileScope();
-  const scope: ProfileScope = wanted === 'workspace' && !hasWorkspace() ? 'global' : wanted;
-
-  if (current && current !== scope) {
-    await writeAt(
-      current,
-      readAt(current).filter((other) => other.name !== profile.name),
-    );
-  }
-  await writeAt(scope, [
-    ...readAt(scope).filter((other) => other.name !== profile.name),
-    profile,
-  ]);
+  scope?: ProfileScope,
+): Promise<ProfileScope> {
+  const plan = planSave(snapshot(), profile, scope, hasWorkspace(), profileScope());
+  await applyWrites(plan.writes);
+  return plan.scope;
 }
 
-/** Remove a profile from wherever it lives, both scopes included. */
+/** Remove the profile the user can see, at the scope it actually lives at. */
 export async function deleteProfile(name: string): Promise<void> {
-  for (const scope of ['workspace', 'global'] as const) {
-    const before = readAt(scope);
-    const after = before.filter((profile) => profile.name !== name);
-    if (after.length !== before.length) {
-      await writeAt(scope, after);
-    }
-  }
+  await applyWrites(planDelete(snapshot(), name));
 }
 
-/** Move named profiles out of global settings and into this workspace. */
-export async function moveToWorkspace(names: string[]): Promise<number> {
-  if (!hasWorkspace() || names.length === 0) {
-    return 0;
-  }
-  const wanted = new Set(names);
-  const moving = readAt('global').filter((profile) => wanted.has(profile.name));
-  if (moving.length === 0) {
-    return 0;
-  }
-  const existing = readAt('workspace');
-  const taken = new Set(existing.map((profile) => profile.name));
-  await writeAt('workspace', [
-    ...existing,
-    ...moving.filter((profile) => !taken.has(profile.name)),
-  ]);
-  await writeAt(
-    'global',
-    readAt('global').filter((profile) => !wanted.has(profile.name)),
-  );
-  return moving.length;
-}
-
-async function writeAt(scope: ProfileScope, profiles: InstanceProfile[]): Promise<void> {
-  const sorted = [...profiles].sort((a, b) => a.name.localeCompare(b.name));
-  // `undefined` removes the key rather than leaving an empty array behind, so
-  // an emptied workspace list falls back to the global one instead of shadowing
-  // it with nothing.
-  const value = sorted.length ? sorted : undefined;
-
-  try {
-    await vscode.workspace
-      .getConfiguration(SECTION)
-      .update(
-        KEY,
-        value,
-        scope === 'global'
-          ? vscode.ConfigurationTarget.Global
-          : vscode.ConfigurationTarget.Workspace,
-      );
-    return;
-  } catch (error) {
-    // A workspace write can genuinely fail: an untrusted workspace, settings
-    // that are read only, or a window whose configuration registry has lost the
-    // key after the extension was updated in place. Losing the profile in that
-    // case is the worst outcome, so it goes to global instead and says so.
-    // Silently doing nothing is what this replaces.
-    if (scope === 'global') {
-      throw error;
-    }
-    await vscode.workspace
-      .getConfiguration(SECTION)
-      .update(KEY, value, vscode.ConfigurationTarget.Global);
-    void vscode.window.showWarningMessage(
-      `Could not save to this project's settings, so the profile was saved globally instead. ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
-  }
+/**
+ * Move named profiles out of global settings and into this workspace.
+ *
+ * Returns what happened rather than a count, because a name the workspace
+ * already uses is skipped rather than moved, and reporting it as moved is how a
+ * profile used to disappear while the toast said it had been migrated.
+ */
+export async function moveToWorkspace(names: string[]): Promise<Omit<MovePlan, 'writes'>> {
+  const plan = planMove(snapshot(), names, hasWorkspace());
+  await applyWrites(plan.writes);
+  return { moved: plan.moved, skipped: plan.skipped };
 }
