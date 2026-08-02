@@ -51,7 +51,23 @@
     border: 1px solid #303038; border-radius: 9px; overflow: hidden; background: var(--bg);
     box-shadow: 0 16px 44px rgba(0,0,0,.6); display: grid; grid-template-rows: 32px 1fr 24px;
   }
-  .titlebar { background: var(--chrome); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 7px; padding: 0 11px; }
+  .titlebar { background: var(--chrome); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 9px; padding: 0 0 0 7px; overflow: hidden; }
+  .vslogo { width: 16px; height: 16px; flex: none; }
+  .menubar { display: flex; gap: 9px; font-size: 11px; color: #cccccc; white-space: nowrap; flex: none; }
+  .navb { display: flex; gap: 7px; color: #5a5a5a; flex: none; }
+  .navb svg { width: 12px; height: 12px; }
+  .pill { flex: 1; min-width: 0; max-width: 340px; margin: 0 auto; background: #2a2a2a; border: 1px solid #3a3a3a;
+    border-radius: 5px; height: 18px; display: flex; align-items: center; justify-content: center;
+    color: #9d9d9d; font-size: 10.5px; white-space: nowrap; overflow: hidden; }
+  .signin { background: #0078d4; color: #fff; font-size: 10.5px; border-radius: 3px; padding: 1px 7px; flex: none; }
+  .wctl { display: flex; flex: none; }
+  .wctl span { width: 26px; height: 26px; display: grid; place-items: center; color: #cfcfcf; font-size: 9px; }
+  .term-split { display: grid; grid-template-columns: 1fr 172px; min-height: 0; }
+  .term-list { border-left: 1px solid var(--border); padding: 5px 0; font-size: 11px; }
+  .term-list .ti { display: flex; align-items: center; gap: 6px; padding: 3px 8px; color: var(--text); }
+  .term-list .ti.on { background: #04395e; }
+  .term-list .ti svg { width: 11px; height: 11px; flex: none; color: var(--muted); }
+  .agentbar { border-top: 1px solid #2a2a2a; margin-top: 6px; padding: 5px 8px 0; color: var(--dim); font-size: 10px; }
   .dot { width: 10px; height: 10px; border-radius: 50%; background: #3a3a40; }
   .title { flex: 1; text-align: center; color: var(--dim); font-size: 11.5px; }
   .body { display: grid; min-height: 0; }
@@ -86,7 +102,7 @@
   .mgr-item.on { background: var(--focus); color: #fff; box-shadow: inset 2px 0 0 var(--green); }
   .form { padding: 16px 22px; display: grid; gap: 10px; align-content: start; }
   .field { display: grid; grid-template-columns: 122px 1fr; align-items: center; gap: 12px; }
-  .field label { font-size: 12px; color: var(--muted); }
+  .field label { font-size: 10.5px; letter-spacing: .07em; color: var(--muted); }
   .input { background: #2a2a2a; border: 1px solid #3a3a3a; border-radius: 3px; padding: 4px 8px; font-size: 12px; color: var(--text); font-family: var(--mono); }
   .check { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text); }
   .box { width: 12px; height: 12px; border-radius: 2px; background: var(--accent); position: relative; flex: none; }
@@ -141,6 +157,11 @@
         if (pin.dataset.place === 'right') {
           pin.classList.add('inline');
           pin.style.left = Math.round(r.right - s.left + 12) + 'px';
+        } else if (pin.dataset.place === 'left') {
+          // Marks a column from inside its own edge. Placing it on the right
+          // would put it over the neighbour and read as pointing at that.
+          pin.classList.add('inline');
+          pin.style.left = Math.round(r.left - s.left + 10) + 'px';
         } else {
           pin.style.left = '12px';
         }
@@ -157,7 +178,7 @@
     <div class="pin" data-target=".row.sel .inline" data-place="right">2</div>
     <div class="pin" data-target=".statusbar" data-place="gutter">3</div>
     <div class="win" style="height: 302px;">
-      <div class="titlebar"><span class="dot"></span><span class="dot"></span><div class="title">crowmac : Visual Studio Code</div></div>
+      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8212;</span><span>&#9723;</span><span>&#10005;</span></div></div>
       <div class="body" style="grid-template-columns: 44px 342px 1fr;">
         <div class="activity">
           <svg class="act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg>
@@ -176,7 +197,7 @@
           </div>
           <div class="row sel">
             <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="var(--green)" stroke-width="1.4"><rect x="2" y="2.5" width="12" height="4.5" rx="1"/><rect x="2" y="9" width="12" height="4.5" rx="1"/></svg>
-            <span>Alpha</span><span class="desc">Ubuntu &middot; claude --resume Alpha</span>
+            <span>ClaudeCodeWorker1</span><span class="desc">Ubuntu &middot; claude --resume ClaudeCodeWorker1</span>
             <span class="inline">
               <svg class="ico" viewBox="0 0 16 16" fill="currentColor"><path d="M5 3.5l7 4.5-7 4.5z"/></svg>
               <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M11.5 2.5l2 2-8 8H3.5v-2z"/></svg>
@@ -184,37 +205,40 @@
           </div>
           <div class="row">
             <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="var(--muted)" stroke-width="1.4"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M5 6.5L7.5 8.5 5 10.5"/></svg>
-            <span>Beta</span><span class="desc">host shell &middot; npm run watch</span>
+            <span>ClaudeCodeWorker2</span><span class="desc">Ubuntu &middot; claude --resume ClaudeCodeWorker2</span>
           </div>
           <div class="row">
             <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="var(--green)" stroke-width="1.4"><rect x="2" y="2.5" width="12" height="4.5" rx="1"/><rect x="2" y="9" width="12" height="4.5" rx="1"/></svg>
-            <span>Docs</span><span class="desc">Ubuntu &middot; npm run docs</span>
+            <span>Server</span><span class="desc">Ubuntu &middot; npm run dev</span>
           </div>
         </div>
         <div class="term">
-          <div class="term-head"><span class="on">TERMINAL</span><span>PORTS</span><span>PROBLEMS</span></div>
-          <div class="term-body" style="padding-top:34px">
+            <div class="term-head"><span>PROBLEMS</span><span>OUTPUT</span><span>DEBUG CONSOLE</span><span class="on">TERMINAL</span><span>PORTS</span></div>
+            <div class="term-split">
+              <div class="term-body" style="padding-top:34px">
             <div><span class="d">atwellpub@Ubuntu</span>:<span class="b">/mnt/d/repos/crowmac</span>$ nvm use 22</div>
             <div class="d">Now using node v22.14.0</div>
-            <div><span class="d">atwellpub@Ubuntu</span>:<span class="b">/mnt/d/repos/crowmac</span>$ claude --resume Alpha</div>
+            <div><span class="d">atwellpub@Ubuntu</span>:<span class="b">/mnt/d/repos/crowmac</span>$ claude --resume ClaudeCodeWorker1</div>
             <div class="d">&nbsp;</div>
-            <div><span class="g">&#9656;</span> Resuming session Alpha</div>
+            <div><span class="g">&#9656;</span> Resuming session ClaudeCodeWorker1</div>
             <div class="d">&nbsp;</div>
-            <div><span class="d">&gt;</span> <span style="color:#e8e8e8">_</span></div>
-          </div>
+            <div><span class="d">&gt;</span> <span style="color:#e8e8e8">_</span></div></div>
+              <div class="term-list"><div class="ti on"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.8 8.5 4.5 10.5"/><path d="M8.5 11h3"/></svg><span>ClaudeCodeWorker1</span></div><div class="ti"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.8 8.5 4.5 10.5"/><path d="M8.5 11h3"/></svg><span>ClaudeCodeWorker2</span></div><div class="ti"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.8 8.5 4.5 10.5"/><path d="M8.5 11h3"/></svg><span>Server</span></div><div class="ti"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.8 8.5 4.5 10.5"/><path d="M8.5 11h3"/></svg><span>CommandLine</span></div><div class="agentbar">auto mode on</div></div>
+            </div>
+          </div></div>
         </div>
       </div>
-      <div class="statusbar">
+      <div class="statusbar"><span class="chip" style="color:#cfcfcf"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="4.5" cy="3.5" r="1.8"/><circle cx="4.5" cy="12.5" r="1.8"/><circle cx="11.5" cy="8" r="1.8"/><path d="M4.5 5.3v5.4M6.2 11.4 9.9 9.1"/></svg>main*</span>
         <span class="chip"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="1.8"/></svg>FILES</span>
         <span class="chip"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="1.8"/></svg>EDITOR</span>
         <span class="chip"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="1.8"/></svg>TERMINAL</span>
-        <span class="chip off"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2 4.5l12 7"/><path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z"/></svg>CHAT</span>
+        <span class="chip off"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M2 4.5l12 7"/><path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z"/></svg>CHAT</span><span class="chip" style="margin-left:auto;color:#9d9d9d">0 &nbsp;0</span>
       </div>
     </div>
   </div>
   <div class="notes">
     <div class="note"><div class="num">1</div><p><b>Manage Terminal Profiles.</b> Every saved profile in one place, in its own activity bar view. Each is a saved terminal setup: which shell to open, where, and what to run once it is ready.</p></div>
-    <div class="note"><div class="num">2</div><p><b>Launch it from the play button.</b> Clicking the name opens the editor instead, because spawning processes is too consequential for a single click. Commands replay literally, so <code>claude --resume Alpha</code> reopens that exact session.</p></div>
+    <div class="note"><div class="num">2</div><p><b>Launch it from the play button.</b> Clicking the name opens the editor instead, because spawning processes is too consequential for a single click. Commands replay literally, so <code>claude --resume ClaudeCodeWorker1</code> reopens that exact session.</p></div>
     <div class="note"><div class="num">3</div><p><b>Chips show and hide each column</b>, remembered per workspace. One column always stays open.</p></div>
   </div>
 </div>
@@ -227,21 +251,21 @@
     <div class="pin" data-target=".form .check" data-place="gutter">2</div>
     <div class="pin" data-target=".form .cmd" data-place="gutter">3</div>
     <div class="win" style="height: 392px;">
-      <div class="titlebar"><span class="dot"></span><span class="dot"></span><div class="title">crowmac : Visual Studio Code</div></div>
+      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8212;</span><span>&#9723;</span><span>&#10005;</span></div></div>
       <div class="body">
         <div class="pane">
           <div class="tabs"><div class="tab on">Terminal Session Profiles</div><div class="tab">engine.ts</div></div>
           <div class="mgr">
             <div class="mgr-list">
               <div class="mgr-head"><span>PROFILES</span><span>+</span></div>
-              <div class="mgr-item on">Alpha</div>
-              <div class="mgr-item">Beta</div>
-              <div class="mgr-item">Docs</div>
+              <div class="mgr-item on">ClaudeCodeWorker1</div>
+              <div class="mgr-item">ClaudeCodeWorker2</div>
+              <div class="mgr-item">Server</div>
             </div>
             <div class="form">
-              <div class="field"><label>Name</label><div class="input">Alpha</div></div>
-              <div class="field"><label>Shell</label><div class="input">Ubuntu (WSL)</div></div>
-              <div class="field"><label>Working directory</label><div class="input">/mnt/d/repos/crowmac</div></div>
+              <div class="field"><label>NAME</label><div class="input">ClaudeCodeWorker1</div></div>
+              <div class="field"><label>SHELL</label><div class="input">Ubuntu (WSL)</div></div>
+              <div class="field"><label>WORKING DIRECTORY</label><div class="input">/mnt/d/repos/crowmac</div></div>
               <div class="check"><span class="box"></span> Show in the terminal + dropdown</div>
               <div class="cmd-head"><span></span><span>RUN</span><span>WAIT (MS)</span><span></span></div>
               <div class="cmd">
@@ -253,7 +277,7 @@
                 </span>
               </div>
               <div class="cmd">
-                <span class="idx">2</span><div class="input">claude --resume Alpha</div><div class="input">5000</div>
+                <span class="idx">2</span><div class="input">claude --resume ClaudeCodeWorker1</div><div class="input">5000</div>
                 <span class="acts">
                   <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 12.5v-9M4.5 7L8 3.5 11.5 7"/></svg>
                   <svg class="ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 3.5v9M4.5 9L8 12.5 11.5 9"/></svg>
@@ -265,8 +289,8 @@
           </div>
         </div>
       </div>
-      <div class="statusbar">
-        <span class="chip">FILES</span><span class="chip">EDITOR</span><span class="chip">TERMINAL</span><span class="chip off">CHAT</span>
+      <div class="statusbar"><span class="chip" style="color:#cfcfcf"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="4.5" cy="3.5" r="1.8"/><circle cx="4.5" cy="12.5" r="1.8"/><circle cx="11.5" cy="8" r="1.8"/><path d="M4.5 5.3v5.4M6.2 11.4 9.9 9.1"/></svg>main*</span>
+        <span class="chip">FILES</span><span class="chip">EDITOR</span><span class="chip">TERMINAL</span><span class="chip off">CHAT</span><span class="chip" style="margin-left:auto;color:#9d9d9d">0 &nbsp;0</span>
       </div>
     </div>
   </div>
@@ -281,11 +305,11 @@
 <div class="frame" id="shot-columns">
   <div class="caption">Four columns, one keystroke each <span>/ Ctrl+Alt+1 to 4</span></div>
   <div class="stage">
-    <div class="pin" data-target=".sidebar" data-place="gutter">1</div>
-    <div class="pin" data-target=".term" data-place="gutter">2</div>
+    <div class="pin" data-target=".sidebar" data-place="right">1</div>
+    <div class="pin" data-target=".term" data-place="left">2</div>
     <div class="pin" data-target=".statusbar" data-place="gutter">3</div>
     <div class="win" style="height: 322px;">
-      <div class="titlebar"><span class="dot"></span><span class="dot"></span><div class="title">crowmac : Visual Studio Code</div></div>
+      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8212;</span><span>&#9723;</span><span>&#10005;</span></div></div>
       <div class="body" style="grid-template-columns: 44px 190px 1fr 260px 232px;">
         <div class="activity">
           <svg class="act on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg>
@@ -300,33 +324,31 @@
         </div>
         <div class="pane">
           <div class="tabs"><div class="tab on">engine.ts</div></div>
-          <div class="term-body">
-            <div><span class="b">async</span> apply(): <span class="g">Promise</span>&lt;<span class="b">void</span>&gt; {</div>
-            <div>&nbsp;&nbsp;<span class="b">for</span> (<span class="b">const</span> def <span class="b">of</span> <span class="b">this</span>.applyOrder) {</div>
-            <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="d">// the editor column goes last</span></div>
-            <div>&nbsp;&nbsp;}</div>
-            <div>}</div>
+            <div class="term-body">
+              <div><span class="b">async</span> apply(): <span class="g">Promise</span>&lt;<span class="b">void</span>&gt; {</div>
+              <div>&nbsp;&nbsp;<span class="b">for</span> (<span class="b">const</span> def <span class="b">of</span> <span class="b">this</span>.applyOrder) {</div>
+              <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="d">// the editor column goes last</span></div>
+              <div>&nbsp;&nbsp;}</div>
+              <div>}</div>
+            </div>
           </div>
-        </div>
-        <div class="term">
-          <div class="term-head"><span class="on">TERMINAL</span><span>PORTS</span></div>
-          <div class="term-body">
-            <div class="d">Alpha</div>
-            <div><span class="g">&#9656;</span> claude --resume Alpha</div>
+          <div class="term">
+            <div class="term-head"><span>PROBLEMS</span><span>OUTPUT</span><span class="on">TERMINAL</span><span>PORTS</span></div>
+            <div class="term-body">
+            <div class="d">ClaudeCodeWorker1</div>
+            <div><span class="g">&#9656;</span> claude --resume ClaudeCodeWorker1</div>
             <div class="d">&nbsp;</div>
-            <div class="d">Beta</div>
-            <div><span class="g">&#9656;</span> npm run watch</div>
-          </div>
-        </div>
+            <div class="d">ClaudeCodeWorker2</div>
+            <div><span class="g">&#9656;</span> npm run watch</div></div></div>
         <div class="aux">
           <div class="aux-h">CHAT</div>
           <div class="bubble">Bring back the layout I had on Friday.</div>
-          <div class="bubble">Reopened Alpha and Beta. Docs was still running, so I left it alone.</div>
+          <div class="bubble">Reopened both Claude workers. Server was still running, so I left it alone.</div>
         </div>
       </div>
-      <div class="statusbar">
+      <div class="statusbar"><span class="chip" style="color:#cfcfcf"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="4.5" cy="3.5" r="1.8"/><circle cx="4.5" cy="12.5" r="1.8"/><circle cx="11.5" cy="8" r="1.8"/><path d="M4.5 5.3v5.4M6.2 11.4 9.9 9.1"/></svg>main*</span>
         <span class="chip hl">FILES</span><span class="chip hl">EDITOR</span><span class="chip hl">TERMINAL</span><span class="chip hl">CHAT</span>
-        <span style="margin-left:auto;color:var(--dim)">Ctrl+Alt+1 &middot; 2 &middot; 3 &middot; 4</span>
+        <span style="margin-left:auto;color:var(--dim)">Ctrl+Alt+1 &middot; 2 &middot; 3 &middot; 4</span><span class="chip" style="margin-left:auto;color:#9d9d9d">0 &nbsp;0</span>
       </div>
     </div>
   </div>
