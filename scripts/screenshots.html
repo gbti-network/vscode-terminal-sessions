@@ -157,6 +157,12 @@
         if (pin.dataset.place === 'right') {
           pin.classList.add('inline');
           pin.style.left = Math.round(r.right - s.left + 12) + 'px';
+        } else if (pin.dataset.place === 'outside-left') {
+          // Just clear of the target's left edge. A gutter pin would sit at the
+          // frame edge, where its leader line appears to point at whatever
+          // column happens to be there rather than at the row it marks.
+          pin.classList.add('inline');
+          pin.style.left = Math.round(r.left - s.left - 34) + 'px';
         } else if (pin.dataset.place === 'left') {
           // Marks a column from inside its own edge. Placing it on the right
           // would put it over the neighbour and read as pointing at that.
@@ -247,9 +253,9 @@
 <div class="frame" id="shot-editor">
   <div class="caption">Every field at once <span>/ Manage Instance Profiles</span></div>
   <div class="stage">
-    <div class="pin" data-target=".form .field:first-child" data-place="gutter">1</div>
-    <div class="pin" data-target=".form .check" data-place="gutter">2</div>
-    <div class="pin" data-target=".form .cmd" data-place="gutter">3</div>
+    <div class="pin" data-target=".form .field:first-child" data-place="outside-left">1</div>
+    <div class="pin" data-target=".form .check" data-place="outside-left">2</div>
+    <div class="pin" data-target=".form .cmd" data-place="outside-left">3</div>
     <div class="win" style="height: 392px;">
       <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8212;</span><span>&#9723;</span><span>&#10005;</span></div></div>
       <div class="body">
@@ -266,6 +272,7 @@
               <div class="field"><label>NAME</label><div class="input">ClaudeCodeWorker1</div></div>
               <div class="field"><label>SHELL</label><div class="input">Ubuntu (WSL)</div></div>
               <div class="field"><label>WORKING DIRECTORY</label><div class="input">/mnt/d/repos/crowmac</div></div>
+              <div class="field"><label>SAVED IN</label><div class="input" style="font-family:var(--sans)">This project only</div></div>
               <div class="check"><span class="box"></span> Show in the terminal + dropdown</div>
               <div class="cmd-head"><span></span><span>RUN</span><span>WAIT (MS)</span><span></span></div>
               <div class="cmd">

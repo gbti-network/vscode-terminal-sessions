@@ -4,6 +4,26 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-08-01
+
+### Changed
+
+- Listing screenshots rebuilt on the chrome the demo already uses: VS Code logo, menu bar, command
+  pill, the real terminal tab row with its terminal list, and the branch and diagnostics clusters in
+  the status bar. The listing had been showing a less accurate mock than the video, and the terminal
+  list is where profile names actually surface.
+- The profile form in the screenshots gains uppercase labels and the **SAVED IN** control it has
+  shipped with since 0.3.1.
+- Examples renamed to `ClaudeCodeWorker1`, `ClaudeCodeWorker2`, `Server` and `CommandLine`, so the
+  README, the screenshots and the demo agree.
+
+### Removed
+
+- Two README sections that were mechanism dumps rather than documentation: the activity-bar-icon
+  recovery notes, which describe a failure reachable only if the extension's own view id changes and
+  those ids are now frozen, and the long restore explanation. Restore keeps a short statement, since
+  it is a headline feature.
+
 ## [0.4.2] - 2026-08-01
 
 ### Changed

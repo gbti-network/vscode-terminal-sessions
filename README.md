@@ -38,21 +38,11 @@ Commands run in order once shell integration reports ready. **Every command but 
 
 ![Every field at once: the profile editor with name, shell, working directory and an ordered command list](.product/public/02-editor.png)
 
-### If the activity bar icon disappears
-
-VS Code remembers which container each view lives in, and moves a view to a default container if its own container id ever stops existing. A container left with no views is hidden, so the icon goes with it. Run **Show Session Profiles View** from the palette: it reveals the view wherever it currently is, and offers to reset view locations if it cannot. Dragging the view back out of the Explorer works too.
-
-Extensions cannot read or set view locations, so this is recovery rather than prevention. The ids `terminalSessions` and `terminalSessions.profiles` are frozen for exactly this reason.
-
 ### Restoring after a restart
 
-Out of the box, closing a VS Code **window** loses your terminals entirely. `terminal.integrated.persistentSessionReviveProcess` defaults to `onExit`, which means *application* exit, so a window close or a stopped debug session takes them with it. Terminal Sessions widens that to `onExitAndWindowClose`, and that alone is what makes the tabs come back.
+Close a VS Code window and your terminals are gone: `persistentSessionReviveProcess` ships as `onExit`, meaning *application* exit. Terminal Sessions widens that, then relaunches each saved profile in the right shell with its commands replayed. A terminal whose process genuinely survived is left alone rather than replaced.
 
-Tabs are only half of it, though. A revived tab is a fresh **default-profile** shell with your old scrollback replayed into it: the name is right and the text looks familiar, but the shell is wrong and nothing is running. In testing, a tab that had been Ubuntu with `claude` running in it came back as a bare `PS D:\...>` prompt.
-
-So the extension does the other half too. Launched profiles are remembered per workspace, and on startup each revived tab whose name matches a saved profile is disposed and relaunched as that profile, in the right shell, with its commands replayed. Automatic by default, governed by `terminalSessions.autoRestoreSession`. **Restore Last Session** in the palette re-runs it, for the one case automation misses: after closing a restored terminal by hand.
-
-A terminal whose process genuinely survived is left alone rather than replaced: the process id recorded at launch is compared against the one that came back, because the two cases are indistinguishable by name and getting it wrong would kill a live session.
+Automatic by default, governed by `terminalSessions.autoRestoreSession`.
 
 ## Columns
 
