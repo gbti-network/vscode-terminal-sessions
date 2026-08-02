@@ -18,7 +18,7 @@ cannot be corrected without redrawing it, which is how four unusable banner draf
 
 | File | Source | Regenerate |
 |---|---|---|
-| `01-profiles.png`, `02-editor.png`, `03-columns.png` | `scripts/screenshots.html` | Serve the directory and screenshot each `.frame` |
+| `01-profiles.png`, `02-editor.png`, `03-columns.png` | `scripts/screenshots.html` | `node scripts/capture-screenshots.mjs` |
 
 Only images the README actually links to belong in here. The banner is built by
 `scripts/banner.html` and `node scripts/capture-banner.mjs`, but the README does not use it, so its

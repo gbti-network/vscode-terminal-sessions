@@ -19,6 +19,29 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
   such as the GitHub social preview, so the output sits in the gitignored branding folder alongside the
   drafts rather than in the directory the marketplace resolves listing images from.
 
+### Fixed
+
+- **The first listing screenshot showed numbered markers with no legend.** Frame 1 of
+  `scripts/screenshots.html` closed two `<div>`s early, so the parser lifted its notes out of the
+  frame entirely and made them a sibling of `<body>`. The same imbalance put the status bar outside
+  the window and left the third marker sitting on top of the branch name. Frames 2 and 3 were nested
+  correctly and were never affected.
+- **A terminal column painted over the chat column.** Its tab row measured 277px inside a 260px
+  column, so `PORTS` disappeared under `CHAT` and a command ran on past the divider. The column is
+  now sized to its own tab row, and a column clips its content the way the real workbench does.
+- Markers no longer sit on the content they point at: one covered a command in the terminal, another
+  covered the profile list's **+**.
+- `Ctrl+Alt+Left` and `Ctrl+Alt+Right` are spelled out. They were unicode arrows, which the no-em-dash
+  rule covers as well, and a listing image is read more often than the README.
+
+### Added
+
+- `scripts/capture-screenshots.mjs`. The listing images had no capture script and were framed by
+  hand, which is how a legend got cropped off a published image. It captures each `.frame` whole and
+  refuses to write anything when a marker's target is missing, when markers and notes are unequal in
+  number, when a column overflows its neighbour, or when banned punctuation reaches rendered text.
+  Every defect above would have failed that check.
+
 ### Removed
 
 - **The restore section**, down to one sentence in *Session profiles*. What survived the 0.4.3 trim

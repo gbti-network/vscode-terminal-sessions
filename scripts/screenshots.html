@@ -9,8 +9,11 @@
   extension: the view name, chip labels, form fields and button copy are taken
   from src/ and media/. Do not draw a control the extension does not contribute.
 
-  Regenerate: serve this directory and screenshot each .frame element.
-    python3 -m http.server 8931
+  Each .frame holds a caption, the mock, and the notes explaining its numbered
+  pins. All three are one element on purpose: capturing them by hand once
+  published an image whose pins had no legend, because the crop stopped above it.
+
+  Regenerate: node scripts/capture-screenshots.mjs
 -->
 <style>
   :root {
@@ -90,6 +93,10 @@
   .row .inline { margin-left: auto; display: flex; gap: 8px; color: var(--muted); flex: none; padding-left: 6px; }
   .ico { width: 14px; height: 14px; display: block; flex: none; }
 
+  /* A column clips its own content. Without this a tab row or a long command
+     paints over the neighbouring column, which the real workbench never does and
+     which shipped in an earlier listing image as PORTS disappearing under CHAT. */
+  .pane, .term, .aux { overflow: hidden; }
   .pane { background: var(--bg); min-width: 0; display: grid; grid-template-rows: 33px 1fr; }
   .tabs { display: flex; background: var(--chrome); border-bottom: 1px solid var(--border); }
   .tab { padding: 0 13px; display: flex; align-items: center; font-size: 12px; color: var(--dim); border-right: 1px solid var(--border); }
@@ -171,6 +178,15 @@
         } else {
           pin.style.left = '12px';
         }
+
+        // A measured position is right about which control it marks and says
+        // nothing about what sits underneath. `data-dy` moves a pin off text it
+        // would otherwise cover, without going back to hand-tuned coordinates:
+        // the anchor is still the target's box.
+        const dx = Number(pin.dataset.dx ?? 0);
+        const dy = Number(pin.dataset.dy ?? 0);
+        if (dx) pin.style.left = parseFloat(pin.style.left) + dx + 'px';
+        if (dy) pin.style.top = parseFloat(pin.style.top) + dy + 'px';
       }
     }
   });
@@ -184,7 +200,7 @@
     <div class="pin" data-target=".row.sel .inline" data-place="right">2</div>
     <div class="pin" data-target=".statusbar" data-place="gutter">3</div>
     <div class="win" style="height: 302px;">
-      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8212;</span><span>&#9723;</span><span>&#10005;</span></div></div>
+      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8722;</span><span>&#9723;</span><span>&#10005;</span></div></div>
       <div class="body" style="grid-template-columns: 44px 342px 1fr;">
         <div class="activity">
           <svg class="act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg>
@@ -232,8 +248,6 @@
               <div class="term-list"><div class="ti on"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.8 8.5 4.5 10.5"/><path d="M8.5 11h3"/></svg><span>ClaudeCodeWorker1</span></div><div class="ti"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.8 8.5 4.5 10.5"/><path d="M8.5 11h3"/></svg><span>ClaudeCodeWorker2</span></div><div class="ti"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.8 8.5 4.5 10.5"/><path d="M8.5 11h3"/></svg><span>Server</span></div><div class="ti"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="1.5" y="2.5" width="13" height="11" rx="1.5"/><path d="M4.5 6.5 6.8 8.5 4.5 10.5"/><path d="M8.5 11h3"/></svg><span>CommandLine</span></div><div class="agentbar">auto mode on</div></div>
             </div>
           </div></div>
-        </div>
-      </div>
       <div class="statusbar"><span class="chip" style="color:#cfcfcf"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="4.5" cy="3.5" r="1.8"/><circle cx="4.5" cy="12.5" r="1.8"/><circle cx="11.5" cy="8" r="1.8"/><path d="M4.5 5.3v5.4M6.2 11.4 9.9 9.1"/></svg>main*</span>
         <span class="chip"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="1.8"/></svg>FILES</span>
         <span class="chip"><svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="1.8"/></svg>EDITOR</span>
@@ -253,11 +267,13 @@
 <div class="frame" id="shot-editor">
   <div class="caption">Every field at once <span>/ Manage Instance Profiles</span></div>
   <div class="stage">
-    <div class="pin" data-target=".form .field:first-child" data-place="outside-left">1</div>
+    <!-- The SHELL row, not NAME: NAME sits level with the PROFILES header, so a
+         pin there covers that column's + button. -->
+    <div class="pin" data-target=".form .field:nth-child(2)" data-place="outside-left">1</div>
     <div class="pin" data-target=".form .check" data-place="outside-left">2</div>
     <div class="pin" data-target=".form .cmd" data-place="outside-left">3</div>
     <div class="win" style="height: 392px;">
-      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8212;</span><span>&#9723;</span><span>&#10005;</span></div></div>
+      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8722;</span><span>&#9723;</span><span>&#10005;</span></div></div>
       <div class="body">
         <div class="pane">
           <div class="tabs"><div class="tab on">Terminal Session Profiles</div><div class="tab">engine.ts</div></div>
@@ -313,11 +329,15 @@
   <div class="caption">Four columns, one keystroke each <span>/ Ctrl+Alt+1 to 4</span></div>
   <div class="stage">
     <div class="pin" data-target=".sidebar" data-place="right">1</div>
-    <div class="pin" data-target=".term" data-place="left">2</div>
+    <!-- Below the last line rather than centred on the panel, where it would
+         sit on top of `npm run watch`. -->
+    <div class="pin" data-target=".term" data-place="left" data-dy="58">2</div>
     <div class="pin" data-target=".statusbar" data-place="gutter">3</div>
     <div class="win" style="height: 322px;">
-      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8212;</span><span>&#9723;</span><span>&#10005;</span></div></div>
-      <div class="body" style="grid-template-columns: 44px 190px 1fr 260px 232px;">
+      <div class="titlebar"><svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg><div class="menubar"><span>File</span><span>Edit</span><span>Selection</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span><span>Help</span></div><div class="navb"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 3.5 5.5 8l4.5 4.5"/></svg><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 3.5 10.5 8 6 12.5"/></svg></div><div class="pill">crowmac | Visual Studio Code</div><span class="signin">Sign In</span><div class="wctl"><span>&#8722;</span><span>&#9723;</span><span>&#10005;</span></div></div>
+      <!-- The terminal column is sized to its own tab row: PROBLEMS OUTPUT
+           TERMINAL PORTS measures 277px, so anything narrower clips a tab. -->
+      <div class="body" style="grid-template-columns: 44px 190px 1fr 286px 232px;">
         <div class="activity">
           <svg class="act on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16v16H4z"/><path d="M4 9h16"/></svg>
           <svg class="act" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2"/><path d="M6.5 9.5L9.5 12L6.5 14.5"/></svg>
@@ -362,6 +382,6 @@
   <div class="notes">
     <div class="note"><div class="num">1</div><p><b>Explorer, editor, terminal and chat</b>, each shown and hidden independently. These drive VS Code's real containers, not copies, which is what keeps the terminal's own list and the genuine chat shells working.</p></div>
     <div class="note"><div class="num">2</div><p><b>Terminals come back after a restart.</b> A process that genuinely survived is left alone rather than replaced, because getting that wrong would kill a live session.</p></div>
-    <div class="note"><div class="num">3</div><p><b>Every chip has a keystroke.</b> Grow and shrink the focused column with <code>Ctrl+Alt+&larr;</code> and <code>&rarr;</code>.</p></div>
+    <div class="note"><div class="num">3</div><p><b>Every chip has a keystroke.</b> Grow and shrink the focused column with <code>Ctrl+Alt+Left</code> and <code>Ctrl+Alt+Right</code>.</p></div>
   </div>
 </div>
