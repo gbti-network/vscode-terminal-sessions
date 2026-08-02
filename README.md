@@ -62,31 +62,41 @@ The Explorer, editor, terminal and chat panes can be shown and hidden from statu
 
 ![Four columns, one keystroke each: Explorer, editor, terminal and chat with their status bar chips](.product/public/03-columns.png)
 
-### The editor column is not like the other three
+### The editor and terminal share one lever
 
-The others are independent of one another. The editor is not, because of how VS Code hides it: `workbench.action.toggleEditorVisibility` is a one-line delegation to `toggleMaximizedPanel()`. The editor area does not hide into nothing: **its space is handed to the panel**. Two consequences worth knowing before you bind a key to it:
+Hiding the editor hands its space to the terminal column. That coupling comes from VS Code itself: `workbench.action.toggleEditorVisibility` is a one-line delegation to `toggleMaximizedPanel()`, so hiding the editor and maximizing the panel are the same operation.
 
-- The editor and terminal columns can never be hidden at the same time, and each moves the other. Hiding the editor reveals the terminal column if it was closed, because something has to receive the space. Hiding the terminal while the editor is hidden brings the editor back, since VS Code un-maximizes the panel on its way out; the editor chip lights up with it.
-- Hiding the editor from VS Code's own **View → Appearance** menu instead of the chip leaves the chip showing the wrong state. Nothing can be done about that: the real state lives in a context key (`mainEditorAreaVisible`) that extensions can set but never read, which is the same reason the other three chips cannot see their containers being closed by their own title-bar buttons.
+Two things follow, worth knowing before you bind a key to it:
 
-On a host too old to have either command the chip is dropped entirely rather than shown doing nothing. `Reset Layout` brings everything back.
+- The two columns move each other, and can never both be hidden. Hiding the editor reveals the terminal column if it was closed, because the space has to go somewhere. Hiding the terminal while the editor is hidden brings the editor back, since VS Code un-maximizes the panel on its way out, and the editor chip lights up with it.
+- The chip can show the wrong state. Hide the editor from VS Code's own **View > Appearance** menu and the chip will not know, because the real state lives in a context key (`mainEditorAreaVisible`) that extensions can set but never read. The other three chips share that blind spot when their containers are closed by their own title-bar buttons.
+
+On a host too old to have either command, the chip is dropped rather than shown doing nothing. `Reset Layout` puts everything back.
 
 ## Commands
 
-| Command | Default key |
+Open the palette with `Ctrl+Shift+P` and type `Terminal Sessions` to see all of them.
+
+| Command, as it appears in the palette | Default key |
 |---|---|
-| Manage Instance Profiles | none |
-| New Instance Profile / Open Profile / Edit Profile | none |
-| Move Global Profiles into This Workspace | none |
-| Show Session Profiles View | none |
-| Save as Instance Profile | terminal right-click |
-| Restore Last Session | none |
-| Toggle Files / Editor / Terminal / Chat | `Ctrl+Alt+1` / `2` / `3` / `4` |
-| Show or Hide Column… | none |
-| Enable / Disable Column Layout | none |
-| New Terminal in Column | ``Ctrl+Shift+` `` |
-| Grow / Shrink Focused Column | `Ctrl+Alt+←` / `→` |
-| Reset Layout | none |
+| Terminal Sessions: Manage Instance Profiles | none |
+| Terminal Sessions: New Instance Profile | none |
+| Terminal Sessions: Save as Instance Profile | terminal right-click |
+| Terminal Sessions: Move Global Profiles into This Workspace | none |
+| Terminal Sessions: Show Session Profiles View | none |
+| Terminal Sessions: Restore Last Session | none |
+| Terminal Sessions: Stop Restoring a Profile... | none |
+| Terminal Sessions: Toggle Files Column | `Ctrl+Alt+1` |
+| Terminal Sessions: Toggle Editor Column | `Ctrl+Alt+2` |
+| Terminal Sessions: Toggle Terminal Column | `Ctrl+Alt+3` |
+| Terminal Sessions: Toggle Chat Column | `Ctrl+Alt+4` |
+| Terminal Sessions: Show or Hide Column... | none |
+| Terminal Sessions: Enable Column Layout | none |
+| Terminal Sessions: Disable Column Layout | none |
+| Terminal Sessions: New Terminal in Column | ``Ctrl+Shift+` `` |
+| Terminal Sessions: Grow Focused Column | `Ctrl+Alt+Right` |
+| Terminal Sessions: Shrink Focused Column | `Ctrl+Alt+Left` |
+| Terminal Sessions: Reset Layout | none |
 
 ## Settings
 
@@ -132,7 +142,7 @@ Every dependency is pure JavaScript and the build is plain `tsc`, deliberately: 
 
 Published to the Visual Studio Marketplace as **`GBTI.gbti-terminal-sessions`**. Authenticate once with a
 [personal access token](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#get-a-personal-access-token)
-scoped to *Marketplace → Manage* for the `gbti-network` Azure DevOps organisation:
+scoped to *Marketplace > Manage* for the `gbti-network` Azure DevOps organisation:
 
 ```bash
 npx @vscode/vsce login GBTI

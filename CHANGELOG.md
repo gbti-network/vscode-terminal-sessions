@@ -4,6 +4,20 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-08-01
+
+### Changed
+
+- The editor-column section is rewritten. It opened with three negations before saying what actually
+  happens, so a reader had to hold "not like the others, not independent, not into nothing" before
+  reaching a single positive statement. It now leads with the behaviour, that hiding the editor hands
+  its space to the terminal column, and gives the mechanism second.
+- The Commands table lists titles as they appear in the palette, prefixed **Terminal Sessions:**, with
+  every command listed rather than merged rows, and names `Ctrl+Shift+P` for opening the palette. The
+  old table listed names that could not be found by searching for them.
+- Unicode arrows and ellipsis replaced with the characters a keyboard produces, and
+  `Show or Hide Column...` now matches the command title it ships under.
+
 ## [0.4.1] - 2026-08-01
 
 ### Changed

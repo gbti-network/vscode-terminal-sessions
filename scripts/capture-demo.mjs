@@ -79,11 +79,12 @@ async function ffmpeg(args) {
  */
 async function encodeScene(framesDir, name, seconds) {
   const pattern = join(framesDir, '%05d.png');
-  const fade = `fade=t=in:st=0:d=0.18,fade=t=out:st=${(seconds - 0.18).toFixed(2)}:d=0.18`;
+  // No fade filter: the storyboard pixelates its own scene edges, so ffmpeg
+  // adding a dip to black on top would read as two transitions at every cut.
   const pro = join(WORK, 'scenes', `${name}.mov`);
-  await ffmpeg(['-framerate', String(FPS), '-i', pattern, '-vf', fade,
+  await ffmpeg(['-framerate', String(FPS), '-i', pattern,
     '-c:v', 'prores_ks', '-profile:v', '3', '-pix_fmt', 'yuv422p10le', pro]);
-  await ffmpeg(['-framerate', String(FPS), '-i', pattern, '-vf', fade,
+  await ffmpeg(['-framerate', String(FPS), '-i', pattern,
     '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-preset', 'slow',
     '-movflags', '+faststart', join(OUT, 'scenes', `${name}.mp4`)]);
   return pro;

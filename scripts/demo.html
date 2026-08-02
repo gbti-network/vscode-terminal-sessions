@@ -97,7 +97,7 @@
 
   .term{background:var(--bg);border-left:1px solid var(--border);display:grid;grid-template-rows:32px 1fr;min-width:0}
   .term-head{display:flex;gap:15px;align-items:center;padding:0 12px;font-size:11px;letter-spacing:.06em;color:var(--dim);border-bottom:1px solid var(--border)}
-  .term-split{display:grid;grid-template-columns:1fr 152px;min-height:0}
+  .term-split{display:grid;grid-template-columns:1fr 196px;min-height:0}
   .term-list{border-left:1px solid var(--border);padding:5px 0;font-size:12px}
   .term-list .ti{display:flex;align-items:center;gap:7px;padding:3px 9px;color:var(--text)}
   .term-list .ti.on{background:var(--focus)}
@@ -131,10 +131,20 @@
     background:linear-gradient(to top, rgba(8,10,13,.985) 22%, rgba(8,10,13,.88) 52%, rgba(8,10,13,0) 100%)}
   #lower{position:absolute;left:56px;bottom:150px;opacity:0}
   #lower .eyebrow{font-size:12px;letter-spacing:.18em;color:var(--green);margin-bottom:7px}
-  #lower .head{font-size:31px;color:#fff;letter-spacing:-.015em;line-height:1.2;max-width:760px}
+  #lower .head{font-size:31px;color:#fff;letter-spacing:-.015em;line-height:1.22;max-width:1000px;white-space:nowrap}
   #vig{position:absolute;inset:0;pointer-events:none;
     background:radial-gradient(120% 105% at 50% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,.45) 100%)}
 </style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="px" x="0%" y="0%" width="100%" height="100%">
+    <feFlood id="pxFlood" x="4" y="4" width="2" height="2" flood-color="#000"/>
+    <feComposite id="pxComp" width="10" height="10"/>
+    <feTile result="a"/>
+    <feComposite in="SourceGraphic" in2="a" operator="in"/>
+    <feMorphology id="pxMorph" operator="dilate" radius="5"/>
+  </filter>
+</svg>
 
 <div id="stage">
   <div id="zoom">
@@ -183,7 +193,7 @@
           <div class="tabs"><div class="tab on">Instance Profiles</div><div class="tab">README.md</div></div>
           <div class="form">
             <div class="flabel">NAME</div>
-            <div class="input" id="fName">SOWmaster</div>
+            <div class="input" id="fName">ClaudeCodeWorker1</div>
             <p class="hint">Also becomes the terminal tab name.</p>
             <div class="flabel">SHELL</div>
             <div class="select">Ubuntu (WSL) <span style="color:var(--dim)">&#9662;</span></div>
@@ -196,7 +206,7 @@
             <label class="check"><span class="box"></span> Show in the terminal + dropdown</label>
             <div class="flabel" style="margin-top:18px">COMMANDS</div>
             <div class="cmdhead"><span>#</span><span>COMMAND</span><span>WAIT (MS)</span></div>
-            <div class="cmdrow"><span class="n">1</span><span class="input">claude --resume SOWmaster</span><span class="input">3000</span></div>
+            <div class="cmdrow"><span class="n">1</span><span class="input">claude --resume ClaudeCodeWorker1</span><span class="input">3000</span></div>
             <div class="btns"><span class="btn primary">Save</span><span class="btn link">Open</span><span class="btn del">Delete</span></div>
           </div>
         </div>
@@ -243,10 +253,15 @@
   };
 
   const PROFILES = [
-    { name: 'BroadcastMaster', desc: 'Ubuntu \u00b7 claude --resume BroadcastMaster' },
-    { name: 'SOWmaster',       desc: 'Ubuntu \u00b7 claude --resume SOWmaster' },
-    { name: 'UnifiedWorker',   desc: 'Ubuntu \u00b7 claude --resume UnifiedWorker' },
+    { name: 'ClaudeCodeWorker1', desc: 'Ubuntu \u00b7 claude --resume ClaudeCodeWorker1' },
+    { name: 'ClaudeCodeWorker2', desc: 'Ubuntu \u00b7 claude --resume ClaudeCodeWorker2' },
+    { name: 'Server',            desc: 'Ubuntu \u00b7 npm run dev' },
+    { name: 'CommandLine',       desc: 'Ubuntu \u00b7 bash' },
   ];
+  /** The panel's open terminals are the same four, by name. */
+  const TERMINALS = PROFILES.map((p) => p.name);
+  const ACTIVE = 'ClaudeCodeWorker1';
+
   const ROW_TOP = 34 + 33, ROW_H = 25, SIDEBAR_X = 48, SIDEBAR_W = 300;
 
   const EYE_OPEN = '<svg class="eye" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 8s2.5-4.5 7-4.5S15 8 15 8s-2.5 4.5-7 4.5S1 8 1 8z"/><circle cx="8" cy="8" r="1.8"/></svg>';
@@ -280,7 +295,7 @@
   }
 
   function layout(kind) {
-    const g = { full: '48px 300px 1fr 470px', form: '48px 300px 1fr', term: '48px 300px 1fr' }[kind];
+    const g = { full: '48px 300px 1fr 510px', form: '48px 300px 1fr', term: '48px 300px 1fr' }[kind];
     document.querySelector('.body').style.gridTemplateColumns = g;
     $('pane').style.display = kind === 'term' ? 'none' : '';
     document.querySelector('.term').style.display = kind === 'form' ? 'none' : '';
@@ -299,7 +314,7 @@
   }
 
   /** Fill the profile form. Values are passed in so scenes can type into it. */
-  function form({ name = 'SOWmaster', cmd = 'claude --resume SOWmaster', scope = 'This project only', wait = '3000' } = {}) {
+  function form({ name = ACTIVE, cmd = 'claude --resume ClaudeCodeWorker1', scope = 'This project only', wait = '3000' } = {}) {
     $('fName').innerHTML = name;
     $('fScope').innerHTML = `${scope} <span style="color:var(--dim)">&#9662;</span>`;
     document.querySelector('.cmdrow .input').innerHTML = cmd;
@@ -361,14 +376,36 @@
     w.style.transform = `scale(${lerp(0.93, 1, v)})`;
   }
 
+  /**
+   * Pixelate the whole frame by `n` pixels, 0 to switch it off.
+   *
+   * A lofi block dissolve rather than a dip to black: a fade reads as an edit,
+   * a pixelate reads as a transition, and it keeps some of the outgoing frame
+   * on screen instead of going empty. The filter primitives are rewritten per
+   * frame, which only works because the clock is frozen and every frame is
+   * rendered deliberately.
+   */
+  function setPixelate(n) {
+    const zoom = $('zoom');
+    if (n < 0.6) { zoom.style.filter = 'none'; return; }
+    const k = Math.round(n);
+    $('pxFlood').setAttribute('x', k / 2);
+    $('pxFlood').setAttribute('y', k / 2);
+    $('pxComp').setAttribute('width', k);
+    $('pxComp').setAttribute('height', k);
+    $('pxMorph').setAttribute('radius', k / 2);
+    zoom.style.filter = 'url(#px)';
+  }
+
   function reset() {
+    setPixelate(0);
     setWindowOpen(1);
     setCursor(0, 0, 0); setRipple(0, 0, 0); setSpot(null, 0); setZoom(1, 0, 0);
     setCallout('', 0); setLower('', '', 0); $('scrim').style.opacity = 0; setKeys([], 0); setTitle('', '', 0);
     $('shade').style.opacity = 0; $('shade').style.background = '#000';
     $('badge').style.opacity = 0; $('badge').textContent = '';
     layout('full'); rows(); statusbar(); form();
-    term(RUNNING, ['UnifiedWorker','SOWmaster'], 'SOWmaster');
+    term(RUNNING, TERMINALS, ACTIVE);
   }
 
   const RUNNING = [
@@ -390,7 +427,7 @@
     '',
     '<span class="d">&gt;</span> \u2588',
   ];
-  const REVIVED = ['<span class="d">SOWmaster</span>', '<span class="y">PS D:\\_Outfits\\GBTI\\Repos&gt;</span> \u2588', '',
+  const REVIVED = ['<span class="d">ClaudeCodeWorker1</span>', '<span class="y">PS D:\\_Outfits\\GBTI\\Repos&gt;</span> \u2588', '',
     '<span class="d">UnifiedWorker</span>', '<span class="y">PS D:\\_Outfits\\GBTI\\Repos&gt;</span>'];
   const GONE = [];
 
@@ -399,22 +436,28 @@
   // let the eye arrive, and followed by a hold long enough to read the result.
   // The first cut moved between actions faster than a viewer can track.
   const SCENES = [
-    { id: 'open', len: 5, run(t) {
-      layout('full'); term(RUNNING, ['UnifiedWorker', 'SOWmaster'], 'SOWmaster');
-      $('shade').style.opacity = 0.9;
-      // Opaque from the first frame: fading the card up over the IDE showed the
-      // workspace first and read as a blend rather than a title.
+    { id: 'open', len: 6, run(t) {
+      layout('term'); term(RUNNING, TERMINALS, ACTIVE);
+      $('shade').style.opacity = t < 4.2 ? 0.9 : lerp(0.9, 0, seg(t, 4.2, 5.2));
       setTitle('Terminal Session Profiles', 'Your terminals, exactly as you left them',
-        t < 3.6 ? 1 : ease((5 - t) / 1.4));
+        t < 3.8 ? 1 : ease((5.2 - t) / 1.4));
+      // Rises as the card clears and holds to the cut, so the caption reads
+      // continuously into the next scene instead of blinking off. The workspace
+      // is never on screen unexplained.
+      setLower('WHAT YOU ARE LOOKING AT', 'Two Claude Code workers, a dev server and a shell,<br>all running in one VS Code window.', Math.min(1, ease((t - 4.4) / 0.8)));
     }},
 
-{ id: 'session', len: 8, run(t) {
-      // Eight seconds on one idea. The session has to be understood as real and
-      // valuable before losing it can land, and the first cut never said what
-      // was on screen at all.
-      layout('term'); term(RUNNING, ['UnifiedWorker', 'SOWmaster'], 'SOWmaster');
-      setLower('WHERE YOU LEFT OFF', 'A live Claude Code session, running in Ubuntu<br>under WSL, with hours of context behind it.', pulse(t, 0.9, 7.6, 0.14));
-      setSpot([352, 96, 900, 300], pulse(t, 2.2, 7.2, 0.2) * 0.55);
+    { id: 'session', len: 9, run(t) {
+      // Nine seconds on one idea. The session has to be understood as real and
+      // worth keeping before losing it can land.
+      layout('term'); term(RUNNING, TERMINALS, ACTIVE);
+      const first = t < 3.8;
+      setLower(
+        first ? 'WHAT YOU ARE LOOKING AT' : 'WHY IT MATTERS',
+        first ? 'Two Claude Code workers, a dev server and a shell,<br>all running in one VS Code window.'
+              : 'Hours of context live in those sessions.<br>Closing the window throws all of it away.',
+        first ? 1 : pulse(t, 3.8, 8.7, 0.12));
+      setSpot([352, 96, 900, 300], pulse(t, 4.8, 8.4, 0.22) * 0.5);
     }},
 
     { id: 'close', len: 14, run(t) {
@@ -423,7 +466,7 @@
       // an empty panel. Showing the close and the relaunch, rather than a white
       // flash, is what makes the loss legible.
       const reopened = t > 9.4;
-      term(reopened ? GONE : RUNNING, reopened ? [] : ['UnifiedWorker', 'SOWmaster'], 'SOWmaster');
+      term(reopened ? GONE : RUNNING, reopened ? [] : TERMINALS, ACTIVE);
 
       // window shuts between 3.6 and 4.4, comes back between 9.4 and 10.3
       const open = t < 3.6 ? 1 : t < 4.4 ? 1 - ease((t - 3.6) / 0.8)
@@ -445,8 +488,8 @@
 
         { id: 'author', len: 17, run(t) {
       layout('form');
-      const name = typed('SOWmaster', t, 2.6, 5.0);
-      const cmd = typed('claude --resume SOWmaster', t, 8.0, 12.0);
+      const name = typed(ACTIVE, t, 2.6, 5.0);
+      const cmd = typed('claude --resume ClaudeCodeWorker1', t, 8.0, 12.0);
       form({ name: name + (t > 2.6 && t < 5.4 ? caret(t) : ''), cmd: cmd + (t > 8 && t < 12.4 ? caret(t) : '') });
       setLower('AUTHOR IT ONCE', 'A profile is a saved terminal setup: which shell,<br>where, and what to run once it is ready.', pulse(t, 0.8, 16.4, 0.09));
       const toName = seg(t, 1.0, 2.2), toCmd = seg(t, 6.4, 7.6);
@@ -473,11 +516,11 @@
       setCursor(lerp(620, playX, seg(t, 0.8, 3.0)), lerp(430, rowY, seg(t, 0.8, 3.0)), t > 0.5 ? 1 : 0);
       setRipple(playX, rowY, (t - 3.3) / 0.6);
       const out = [];
-      if (t > 4.0) out.push('<span class="d">atwellpub</span>:<span class="b">~/gbti.network</span>$ ' + typed('claude --resume SOWmaster', t, 4.3, 7.2));
-      if (t > 7.8) out.push('', '<span class="g">\u25b8</span> Resuming session SOWmaster');
+      if (t > 4.0) out.push('<span class="d">atwellpub</span>:<span class="b">~/gbti.network</span>$ ' + typed('claude --resume ClaudeCodeWorker1', t, 4.3, 7.2));
+      if (t > 7.8) out.push('', '<span class="g">\u25b8</span> Resuming session ClaudeCodeWorker1');
       if (t > 8.8) out.push('<span class="d">  47 messages restored</span>');
       if (t > 9.6) out.push('', '<span class="d">&gt;</span> ' + caret(t));
-      term(out, t > 4.0 ? ['UnifiedWorker', 'SOWmaster'] : ['UnifiedWorker'], 'SOWmaster');
+      term(out, t > 4.0 ? TERMINALS : TERMINALS.slice(1), ACTIVE);
       setLower('ONE CLICK', 'The shell opens where it should,<br>and the commands replay literally.', pulse(t, 8.4, 14.4, 0.12));
     }},
 
@@ -486,7 +529,7 @@
       // second flash landing right after this scene's fade-in read as a double
       // blink at the cut.
       layout('term'); statusbar([1, 1, 1, 1]);
-      term(t < 3.0 ? REVIVED : RUNNING, ['UnifiedWorker', 'SOWmaster'], 'SOWmaster');
+      term(t < 3.0 ? REVIVED : RUNNING, TERMINALS, ACTIVE);
       if (t < 3.0) { $('badge').style.opacity = 1; $('badge').textContent = 'WHAT VS CODE GIVES BACK'; }
       setLower('WHAT THE EXTENSION DOES', 'Brings the tabs back at all, then relaunches each<br>profile in the right shell, commands replayed.', pulse(t, 3.6, 10.5, 0.12));
     }},
@@ -495,7 +538,7 @@
       const hidden = t > 3.4 && t < 7.4;
       layout(hidden ? 'term' : 'full');
       statusbar([1, !hidden, 1, 1]);
-      term(RUNNING, ['UnifiedWorker', 'SOWmaster'], 'SOWmaster');
+      term(RUNNING, TERMINALS, ACTIVE);
       const chipX = 214, chipY = 707;
       setCursor(lerp(640, chipX, seg(t, 0.8, 2.9)), lerp(420, chipY, seg(t, 0.8, 2.9)), t > 0.5 ? 1 : 0);
       setRipple(chipX, chipY, t > 7.0 ? (t - 7.15) / 0.5 : (t - 3.2) / 0.5);
@@ -504,7 +547,7 @@
     }},
 
     { id: 'outro', len: 6, run(t) {
-      layout('full'); term(RUNNING, ['UnifiedWorker', 'SOWmaster'], 'SOWmaster');
+      layout('full'); term(RUNNING, TERMINALS, ACTIVE);
       $('shade').style.opacity = 0.9;
       setTitle('Terminal Session Profiles', 'ext install GBTI.gbti-terminal-sessions',
         t < 0.6 ? ease(t / 0.6) : 1, true);
@@ -520,19 +563,29 @@
    * The full cut hard-cuts between scenes behind a short dip to black, which
    * reads cleaner than a cross-fade when the layout changes underneath.
    */
+  const TRANS = 0.5, PX_MAX = 30;
+  /** Block dissolve strength at `local` seconds into a scene of `len`. */
+  function edgePixels(local, len) {
+    const inEdge = local < TRANS ? 1 - local / TRANS : 0;
+    const outEdge = local > len - TRANS ? 1 - (len - local) / TRANS : 0;
+    return Math.max(inEdge, outEdge) ** 1.6 * PX_MAX;
+  }
+
   window.__seek = function (t, scene) {
     reset();
-    if (scene && scene !== 'all') { BY_ID[scene].run(Math.min(t, BY_ID[scene].len)); return; }
+    if (scene && scene !== 'all') {
+      const sc = BY_ID[scene];
+      const local = Math.min(t, sc.len);
+      sc.run(local);
+      setPixelate(edgePixels(local, sc.len));
+      return;
+    }
     let acc = 0;
     for (const s of SCENES) {
       if (t < acc + s.len) {
         const local = t - acc;
         s.run(local);
-        const dip = Math.max(
-          local < DIP ? 1 - local / DIP : 0,
-          local > s.len - DIP ? 1 - (s.len - local) / DIP : 0,
-        );
-        if (dip > 0) { $('shade').style.background = '#000'; $('shade').style.opacity = Math.max(Number($('shade').style.opacity) || 0, dip); }
+        setPixelate(edgePixels(local, s.len));
         return;
       }
       acc += s.len;
