@@ -12,7 +12,7 @@ export type ProfileScope = 'workspace' | 'global';
  * Profiles live in settings, at one of two scopes.
  *
  * Originally they were global only, on the reasoning that a profile is a
- * personal recipe that should follow you between projects. In practice a recipe
+ * personal setup that should follow you between projects. In practice a setup
  * is usually *about* a project: it names that project's directory and runs that
  * project's commands, so seeing every project's profiles in every window is
  * noise. Workspace is the default now, and global remains for the handful that

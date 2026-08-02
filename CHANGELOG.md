@@ -4,6 +4,18 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-08-01
+
+### Changed
+
+- A profile is described as **a saved terminal setup** rather than "a named recipe". The metaphor was
+  doing work that plain language does better, and the welcome view is the first thing a new user
+  reads. Changed everywhere it ships: the welcome view, the settings help, the README and the listing
+  screenshots.
+- Listing screenshots regenerated. Their callouts are now positioned from the measured element boxes
+  rather than hand-tuned offsets, so each marker sits on the control it describes, and the mocked
+  editor chrome matches the real one.
+
 ## [0.4.0] - 2026-08-01
 
 ### Removed

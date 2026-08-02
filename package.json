@@ -2,7 +2,7 @@
   "name": "gbti-terminal-sessions",
   "displayName": "Terminal Session Profiles",
   "description": "Save terminal sessions as reusable profiles (shell, directory and startup commands) and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "publisher": "GBTI",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -194,7 +194,7 @@
     "viewsWelcome": [
       {
         "view": "terminalSessions.profiles",
-        "contents": "No saved instance profiles yet.\n\nA profile is a named terminal recipe: which shell to open, where, and what to run once it is ready.\n\n[New Profile](command:terminalSessions.profiles.new)\n\nYou can also right-click a terminal tab and choose \"Save as Instance Profile\" to start from one you already have open."
+        "contents": "No saved instance profiles yet.\n\nA profile is a saved terminal setup: which shell to open, where, and what to run once it is ready.\n\n[New Profile](command:terminalSessions.profiles.new)\n\nYou can also right-click a terminal tab and choose \"Save as Instance Profile\" to start from one you already have open."
       }
     ],
     "menus": {
@@ -365,7 +365,7 @@
         "terminalSessions.instanceProfiles": {
           "type": "array",
           "default": [],
-          "markdownDescription": "Saved terminal recipes. Set here in your user settings they appear in every project; set in a project's `.vscode/settings.json` they appear only there, and a workspace profile shadows a global one of the same name. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally**: write `claude --resume Alpha` to reopen that exact session each time, or `claude --continue` to rejoin whatever ran last in `cwd`.",
+          "markdownDescription": "Saved terminal setups. Set here in your user settings they appear in every project; set in a project's `.vscode/settings.json` they appear only there, and a workspace profile shadows a global one of the same name. Authored via `Save as Instance Profile` on a terminal's right-click menu, and hand-editable here. Commands are replayed **literally**: write `claude --resume Alpha` to reopen that exact session each time, or `claude --continue` to rejoin whatever ran last in `cwd`.",
           "items": {
             "type": "object",
             "required": [

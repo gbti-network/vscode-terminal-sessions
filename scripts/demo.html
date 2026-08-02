@@ -27,6 +27,14 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;background:#0c0c10}
+  #desktop{position:absolute;inset:0;background:
+      radial-gradient(90% 70% at 22% 18%, #1d2a44 0%, #131a2b 45%, #0b0f18 100%)}
+  #desktop .dt-bar{position:absolute;left:0;right:0;bottom:0;height:46px;background:rgba(10,13,20,.86);
+    border-top:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;gap:24px}
+  #desktop .dt-ico{width:26px;height:26px;opacity:.75}
+  #desktop .dt-ico.vs{opacity:1}
+  #desktop .dt-name{position:absolute;left:34px;top:28px;color:rgba(255,255,255,.34);font-size:13px;letter-spacing:.14em}
+  .win{transform-origin:50% 54%}
   #stage{position:relative;width:1280px;height:720px;overflow:hidden;background:#0c0c10;font-family:var(--sans)}
   #zoom{position:absolute;inset:0;transform-origin:0 0}
 
@@ -130,6 +138,14 @@
 
 <div id="stage">
   <div id="zoom">
+    <div id="desktop">
+      <div class="dt-name">DESKTOP</div>
+      <div class="dt-bar">
+        <svg class="dt-ico vs" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg>
+        <svg class="dt-ico" viewBox="0 0 24 24" fill="none" stroke="#9fb0c8" stroke-width="1.5"><path d="M3 7h6l2 2h10v10H3z"/></svg>
+        <svg class="dt-ico" viewBox="0 0 24 24" fill="none" stroke="#9fb0c8" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg>
+      </div>
+    </div>
     <div class="win">
       <div class="titlebar">
         <svg class="vslogo" viewBox="0 0 24 24"><path d="M17.6 2.2 21.4 4a1 1 0 0 1 .6.9v14.2a1 1 0 0 1-.6.9l-3.8 1.8a1 1 0 0 1-1.1-.2L7.8 13l-3.4 2.6-1.9-1a.7.7 0 0 1 0-1.2L5.2 12 2.5 9.6a.7.7 0 0 1 0-1.2l1.9-1L7.8 11l8.7-8.6a1 1 0 0 1 1.1-.2Zm.4 4.3L11.4 12l6.6 5.5V6.5Z" fill="#3fa2e0"/></svg>
@@ -338,7 +354,15 @@
     el.innerHTML = o > 0 ? `${MARK}<h1>${h}</h1><p${mono ? ' style="font-family:var(--mono);color:#4ee39a"' : ''}>${p}</p>` : '';
   }
 
+  /** 1 = window fully open, 0 = closed to the desktop. */
+  function setWindowOpen(v) {
+    const w = document.querySelector('.win');
+    w.style.opacity = v < 0.02 ? 0 : v;
+    w.style.transform = `scale(${lerp(0.93, 1, v)})`;
+  }
+
   function reset() {
+    setWindowOpen(1);
     setCursor(0, 0, 0); setRipple(0, 0, 0); setSpot(null, 0); setZoom(1, 0, 0);
     setCallout('', 0); setLower('', '', 0); $('scrim').style.opacity = 0; setKeys([], 0); setTitle('', '', 0);
     $('shade').style.opacity = 0; $('shade').style.background = '#000';
@@ -384,25 +408,47 @@
         t < 3.6 ? 1 : ease((5 - t) / 1.4));
     }},
 
-    { id: 'problem', len: 13, run(t) {
-      layout('term'); statusbar([1, 1, 1, 1]);
-      // Gone, not revived-with-the-wrong-shell. `persistentSessionReviveProcess`
-      // ships as `onExit`, meaning *application* exit, so closing a window takes
-      // the terminals with it. Tabs return only because this extension widens it.
-      term(t < 2.6 ? RUNNING : GONE, t < 2.6 ? ['UnifiedWorker', 'SOWmaster'] : [], 'SOWmaster');
-      $('shade').style.background = '#dfe6ee';
-      $('shade').style.opacity = pulse(t, 2.35, 2.95, 0.5) * 0.85;
-      if (t > 3.1) { $('badge').style.opacity = 1; $('badge').textContent = 'AFTER CLOSING THE WINDOW'; }
-      setLower('THE PROBLEM', 'Close a window and your terminals are gone.<br>VS Code only revives them when the whole app exits.', pulse(t, 4.0, 12.5, 0.12));
-      setZoom(lerp(1, 1.1, pulse(t, 5.4, 11.5, 0.2)), 0, 210);
+{ id: 'session', len: 8, run(t) {
+      // Eight seconds on one idea. The session has to be understood as real and
+      // valuable before losing it can land, and the first cut never said what
+      // was on screen at all.
+      layout('term'); term(RUNNING, ['UnifiedWorker', 'SOWmaster'], 'SOWmaster');
+      setLower('WHERE YOU LEFT OFF', 'A live Claude Code session, running in Ubuntu<br>under WSL, with hours of context behind it.', pulse(t, 0.9, 7.6, 0.14));
+      setSpot([352, 96, 900, 300], pulse(t, 2.2, 7.2, 0.2) * 0.55);
     }},
 
-    { id: 'author', len: 17, run(t) {
+    { id: 'close', len: 14, run(t) {
+      layout('term');
+      // Terminals survive the close in name only, so the window comes back with
+      // an empty panel. Showing the close and the relaunch, rather than a white
+      // flash, is what makes the loss legible.
+      const reopened = t > 9.4;
+      term(reopened ? GONE : RUNNING, reopened ? [] : ['UnifiedWorker', 'SOWmaster'], 'SOWmaster');
+
+      // window shuts between 3.6 and 4.4, comes back between 9.4 and 10.3
+      const open = t < 3.6 ? 1 : t < 4.4 ? 1 - ease((t - 3.6) / 0.8)
+                 : t < 9.4 ? 0 : Math.min(1, ease((t - 9.4) / 0.9));
+      setWindowOpen(open);
+
+      const closeX = 1256, closeY = 17, dockX = 604, dockY = 697;
+      if (t < 5.0) {
+        setCursor(lerp(700, closeX, seg(t, 1.0, 3.1)), lerp(430, closeY, seg(t, 1.0, 3.1)), t > 0.6 ? 1 : 0);
+        setRipple(closeX, closeY, (t - 3.25) / 0.5);
+      } else {
+        setCursor(lerp(closeX, dockX, seg(t, 6.4, 8.6)), lerp(closeY, dockY, seg(t, 6.4, 8.6)), 1);
+        setRipple(dockX, dockY, (t - 8.75) / 0.5);
+      }
+
+      if (t > 4.4 && t < 9.4) { $('badge').style.opacity = 1; $('badge').textContent = 'WINDOW CLOSED'; }
+      setLower('THE PROBLEM', 'Close a window and your terminals are gone.<br>VS Code only revives them when the whole app exits.', pulse(t, 10.4, 13.5, 0.14));
+    }},
+
+        { id: 'author', len: 17, run(t) {
       layout('form');
       const name = typed('SOWmaster', t, 2.6, 5.0);
       const cmd = typed('claude --resume SOWmaster', t, 8.0, 12.0);
       form({ name: name + (t > 2.6 && t < 5.4 ? caret(t) : ''), cmd: cmd + (t > 8 && t < 12.4 ? caret(t) : '') });
-      setLower('AUTHOR IT ONCE', 'A profile is a recipe: which shell, where,<br>and what to run once it is ready.', pulse(t, 0.8, 16.4, 0.09));
+      setLower('AUTHOR IT ONCE', 'A profile is a saved terminal setup: which shell,<br>where, and what to run once it is ready.', pulse(t, 0.8, 16.4, 0.09));
       const toName = seg(t, 1.0, 2.2), toCmd = seg(t, 6.4, 7.6);
       const x = t < 6.4 ? lerp(980, 700, toName) : 700;
       const y = t < 6.4 ? lerp(560, 176, toName) : lerp(176, 700, toCmd);

@@ -16,7 +16,7 @@ ext install GBTI.gbti-terminal-sessions
 
 ## Session profiles
 
-A profile is a named recipe. Create one from the sidebar's **＋**, or right-click any terminal and choose **Save as Instance Profile** to start from a terminal you already have open.
+A profile is a saved terminal setup: which shell to open, where, and what to run once it is ready. Create one from the sidebar's **＋**, or right-click any terminal and choose **Save as Instance Profile** to start from a terminal you already have open.
 
 - **Sidebar.** Every profile, with an inline ▶ to launch and ✎ to edit. Clicking a profile edits it rather than launching, because spawning processes is too consequential for a single click.
 - **Editor.** All fields at once: name, shell, directory, and an ordered command list you can reorder and delete inline.
@@ -93,7 +93,7 @@ On a host too old to have either command the chip is dropped entirely rather tha
 | Setting | Default | |
 |---|---|---|
 | `terminalSessions.profileScope` | `workspace` | Where a new profile is saved: this project, or global. |
-| `terminalSessions.instanceProfiles` | `[]` | Saved recipes. Hand-editable, at either scope. |
+| `terminalSessions.instanceProfiles` | `[]` | Saved terminal setups. Hand-editable, at either scope. |
 | `terminalSessions.autoRestoreSession` | `true` | Reopen saved profiles on startup. |
 | `terminalSessions.restoreDelayMs` | `3000` | Wait for VS Code's own revival first, so tabs aren't duplicated. |
 | `terminalSessions.layout.autoEnableEverywhere` | `true` | Bring the column layout up in every workspace. |

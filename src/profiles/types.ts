@@ -1,5 +1,5 @@
 /**
- * A saved terminal recipe: how to open a shell, and what to run in it.
+ * A saved terminal saved terminal setup: how to open a shell, and what to run in it.
  *
  * Authored rather than captured, by necessity. At the moment you right-click a
  * terminal there is nothing readable to save: `creationOptions` comes back empty
