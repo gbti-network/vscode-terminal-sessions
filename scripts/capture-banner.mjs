@@ -1,5 +1,10 @@
 /**
- * Render scripts/banner.html to .product/public/banner.webp.
+ * Render scripts/banner.html to .product/branding/banner.webp.
+ *
+ * Not .product/public/, which is only for images the README links to. The
+ * README does not carry a banner; this one is for surfaces outside the
+ * repository, such as the GitHub social preview, which is an upload rather
+ * than a committed file.
  *
  * The page is captured at twice its finished size and downscaled, so type is
  * rasterised at 2x rather than a 1x raster being stretched. `#2x` in the URL is
@@ -30,7 +35,7 @@ const { chromium } = require(process.env.PLAYWRIGHT_CORE || 'playwright-core');
 const run = promisify(execFile);
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const OUT = join(ROOT, '.product', 'public', 'banner.webp');
+const OUT = join(ROOT, '.product', 'branding', 'banner.webp');
 const W = 1500;
 const H = 500;
 

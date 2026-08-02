@@ -1,7 +1,5 @@
 # Terminal Session Profiles
 
-![Save your terminals. Get them back after a restart. A profile replaying claude --resume ClaudeCodeWorker1](.product/public/banner.webp)
-
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
 [![Installs](https://vsmarketplacebadges.dev/installs-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
 [![License](https://img.shields.io/badge/license-MIT-4ee39a)](LICENSE)

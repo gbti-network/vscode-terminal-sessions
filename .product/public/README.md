@@ -18,8 +18,12 @@ cannot be corrected without redrawing it, which is how four unusable banner draf
 
 | File | Source | Regenerate |
 |---|---|---|
-| `banner.webp` | `scripts/banner.html` | `node scripts/capture-banner.mjs` |
 | `01-profiles.png`, `02-editor.png`, `03-columns.png` | `scripts/screenshots.html` | Serve the directory and screenshot each `.frame` |
+
+Only images the README actually links to belong in here. The banner is built by
+`scripts/banner.html` and `node scripts/capture-banner.mjs`, but the README does not use it, so its
+output lands in `.product/branding/` instead. It exists for surfaces outside the repository, such as
+the GitHub social preview, which is an upload rather than a committed file.
 
 `demo-1080p.mp4` is built by `scripts/capture-demo.mjs` from `scripts/demo.html`. It is gitignored,
 because a master runs to hundreds of MB and the marketplace strips `<video>` from a README anyway.

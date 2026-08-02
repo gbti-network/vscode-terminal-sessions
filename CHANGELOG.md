@@ -8,15 +8,16 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 
 ### Added
 
-- **The README opens with a banner**, in the real GBTI type stack: Baloo Da 2 for display, JetBrains
-  Mono for the command, the mint mark, and the extension's own glyph in the icon's colours.
-- `scripts/banner.html` and `scripts/capture-banner.mjs` build it. Four banner drafts had been sitting
-  in the published assets directory since 0.4.0, carried in by a wide `git add`, referenced by
-  nothing and backed by no source, which meant correcting a single word in one of them meant redrawing
-  it. The chosen design now has a generator like every other image here, and the drafts have moved out
-  of the directory the marketplace resolves against. A note claiming the brand faces could not be used
-  because they ship as woff2 only is gone with them: a browser decodes woff2, and the banner is
-  rendered in one.
+- `scripts/banner.html` and `scripts/capture-banner.mjs`, a generator for the project banner. Four
+  banner drafts had been sitting in the published assets directory since 0.4.0, carried in by a wide
+  `git add`, referenced by nothing and backed by no source, so correcting a single word in one of them
+  meant redrawing it by hand. The banner now builds in one command, in the real GBTI type stack:
+  Baloo Da 2 for display, JetBrains Mono for the command, the mint mark, and the extension's own glyph
+  in the icon's colours. A note claiming the brand faces could not be used because they ship as woff2
+  only is gone: a browser decodes woff2, and the banner is rendered in one.
+- The README itself does not carry the banner. It is built for uses that live outside the repository,
+  such as the GitHub social preview, so the output sits in the gitignored branding folder alongside the
+  drafts rather than in the directory the marketplace resolves listing images from.
 
 ### Removed
 
