@@ -1,0 +1,134 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Terminal Session Profiles: banner</title>
+<!--
+  Source for .product/public/banner.webp, the image the README opens with.
+
+  There were four hand-made banner drafts before this file existed, with no
+  source behind them, which meant a one-word correction could not be made
+  without redrawing the whole thing. This is that source.
+
+  Typography is the real GBTI stack: Baloo Da 2 for display and the wordmark,
+  Hanken Grotesk for UI text, JetBrains Mono for anything a shell would print.
+  The drafts substituted Liberation because whatever produced them could not
+  decode woff2; a browser can, so the substitution is gone.
+
+  The glyph is media/terminal-sessions.svg with the icon's own colours from
+  scripts/make-icon.py, and the mark is the GBTI mint mark unmodified.
+
+  Regenerate:
+    python3 -m http.server 8931 --directory .
+    then screenshot the 1500x500 viewport at /scripts/banner.html#2x and
+    downscale, which is what the #2x hash is for: it renders everything at
+    twice the size so the downsample lands crisp.
+-->
+<style>
+  @font-face {
+    font-family: "Baloo Da 2"; src: url("assets/baloo-da-2.woff2") format("woff2");
+    font-weight: 100 900; font-display: block;
+  }
+  @font-face {
+    font-family: "Hanken Grotesk"; src: url("assets/hanken-grotesk.woff2") format("woff2");
+    font-weight: 100 900; font-display: block;
+  }
+  @font-face {
+    font-family: "JetBrains Mono"; src: url("assets/jetbrains-mono.woff2") format("woff2");
+    font-weight: 100 900; font-display: block;
+  }
+
+  :root {
+    /* #232323 is galleryBanner.color in package.json, so the banner and the
+       marketplace header are the same colour rather than nearly the same. */
+    --bg: #232323;
+    --mint: #4ee39a;
+    --text: #f4f4f4;
+    --muted: #9d9d9d;
+    --dim: #6e6e6e;
+    --display: "Baloo Da 2", ui-rounded, system-ui, sans-serif;
+    --ui: "Hanken Grotesk", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+
+  .stage {
+    position: relative; width: 1500px; height: 500px; overflow: hidden;
+    background:
+      radial-gradient(90% 150% at 12% 0%, #2b2b2b 0%, var(--bg) 58%),
+      var(--bg);
+    /* Centred as one group rather than anchored left. Left-anchoring leaves a
+       third of a 3:1 frame empty, which reads as a cropping mistake. */
+    display: flex; align-items: center; justify-content: center; gap: 52px;
+  }
+  /* The one element carried over from the drafts: a mint rule down the left
+     edge, which is what made the lockup read as branded rather than generic. */
+  .stage::before {
+    content: ""; position: absolute; inset: 0 auto 0 0; width: 9px;
+    background: linear-gradient(180deg, var(--mint), #2f9e6a);
+  }
+
+  .glyph { flex: none; width: 134px; height: 134px; }
+  .glyph svg { width: 100%; height: 100%; display: block; }
+
+  .lockup { margin-top: -8px; }
+  .title {
+    font-family: var(--display); font-weight: 700; font-size: 78px; line-height: 1.04;
+    color: var(--text); letter-spacing: -.005em; margin: 0;
+  }
+  .tagline {
+    font-family: var(--ui); font-weight: 400; font-size: 27px; line-height: 1.35;
+    color: var(--muted); margin: 14px 0 0;
+  }
+  .cmd {
+    font-family: var(--mono); font-weight: 400; font-size: 25px; color: var(--mint);
+    margin: 30px 0 0; display: flex; align-items: baseline; gap: 11px;
+    /* No ligatures in a shell command. A face that joins `--` into one long
+       stroke would put something that reads as a dash into shipped artwork,
+       which is exactly the defect one of the discarded drafts had. */
+    font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0;
+  }
+  .cmd .prompt { color: var(--dim); }
+
+  .sig {
+    position: absolute; right: 46px; bottom: 38px;
+    display: flex; align-items: center; gap: 13px;
+  }
+  .sig img { width: 42px; height: 42px; display: block; }
+  .sig span {
+    font-family: var(--display); font-weight: 600; font-size: 21px; color: var(--dim);
+    letter-spacing: .005em;
+  }
+
+  /* Render everything at 2x so the downsample to 1500x500 lands crisp. Text is
+     re-rasterised at the scaled size rather than the raster being stretched. */
+  html.x2 body { width: 3000px; height: 1000px; }
+  html.x2 .stage { transform: scale(2); transform-origin: 0 0; }
+</style>
+
+<div class="stage">
+  <div class="glyph">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="2.5" y="4.5" width="19" height="15" rx="2" stroke="#f2f2f2"/>
+      <path d="M6.5 9.5L9.5 12L6.5 14.5" stroke="#4ee39a"/>
+      <path d="M12 15h5.5" stroke="#f2f2f2"/>
+    </svg>
+  </div>
+
+  <div class="lockup">
+    <h1 class="title">Terminal Session Profiles</h1>
+    <p class="tagline">Save your terminals. Get them back after a restart.</p>
+    <p class="cmd"><span class="prompt">$</span> claude --resume ClaudeCodeWorker1</p>
+  </div>
+
+  <div class="sig">
+    <img src="assets/gbti-mark.png" alt="">
+    <span>GBTI Network</span>
+  </div>
+</div>
+
+<script>
+  if (location.hash === '#2x') { document.documentElement.classList.add('x2'); }
+  // Held until the faces are actually resident, so a capture cannot catch the
+  // fallback metrics mid-swap.
+  document.fonts.ready.then(() => { document.documentElement.dataset.ready = '1'; });
+</script>

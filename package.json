@@ -2,7 +2,7 @@
   "name": "gbti-terminal-sessions",
   "displayName": "Terminal Session Profiles",
   "description": "Save terminal sessions as reusable profiles (shell, directory and startup commands) and bring them back after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.",
-  "version": "0.4.3",
+  "version": "0.4.4",
   "publisher": "GBTI",
   "license": "MIT",
   "icon": "media/icon.png",

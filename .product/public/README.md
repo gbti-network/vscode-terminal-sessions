@@ -11,5 +11,21 @@ Screenshots should be captures of the running extension, or renderings checked a
 decide whether to install from these, so a shot showing something the extension does not actually
 render is a bug.
 
-# Banners 
-One note on the banner: typography is Liberation Sans and Liberation Mono, not Baloo Da 2 and JetBrains Mono, because those ship as woff2 only and there is no offline decoder here. The colours, the GBTI mark and the glyph are exact. 
+Everything here has a source in `scripts/`. Nothing should be hand-made: an asset with no generator
+cannot be corrected without redrawing it, which is how four unusable banner drafts accumulated.
+
+## What is here
+
+| File | Source | Regenerate |
+|---|---|---|
+| `banner.webp` | `scripts/banner.html` | `node scripts/capture-banner.mjs` |
+| `01-profiles.png`, `02-editor.png`, `03-columns.png` | `scripts/screenshots.html` | Serve the directory and screenshot each `.frame` |
+
+`demo-1080p.mp4` is built by `scripts/capture-demo.mjs` from `scripts/demo.html`. It is gitignored,
+because a master runs to hundreds of MB and the marketplace strips `<video>` from a README anyway.
+
+The banner uses the real GBTI type stack, Baloo Da 2 and JetBrains Mono, along with the mint mark and
+the extension's own glyph. An earlier note here recorded a substitution to Liberation, on the
+reasoning that the brand faces ship as woff2 only with no offline decoder. A browser decodes woff2
+natively, so rendering the banner in one removed the need. See `scripts/assets/README.md` for the
+font licences.

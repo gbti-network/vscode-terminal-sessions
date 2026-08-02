@@ -1,5 +1,7 @@
 # Terminal Session Profiles
 
+![Save your terminals. Get them back after a restart. A profile replaying claude --resume ClaudeCodeWorker1](.product/public/banner.webp)
+
 [![VS Marketplace](https://vsmarketplacebadges.dev/version-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
 [![Installs](https://vsmarketplacebadges.dev/installs-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
 [![License](https://img.shields.io/badge/license-MIT-4ee39a)](LICENSE)
@@ -38,11 +40,7 @@ Commands run in order once shell integration reports ready. **Every command but 
 
 ![Every field at once: the profile editor with name, shell, working directory and an ordered command list](.product/public/02-editor.png)
 
-### Restoring after a restart
-
-Close a VS Code window and your terminals are gone: `persistentSessionReviveProcess` ships as `onExit`, meaning *application* exit. Terminal Sessions widens that, then relaunches each saved profile in the right shell with its commands replayed. A terminal whose process genuinely survived is left alone rather than replaced.
-
-Automatic by default, governed by `terminalSessions.autoRestoreSession`.
+Saved profiles come back on their own after a restart, in the right shell with their commands replayed. Automatic by default, governed by `terminalSessions.autoRestoreSession`.
 
 ## Columns
 

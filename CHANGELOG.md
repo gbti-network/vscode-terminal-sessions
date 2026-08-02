@@ -4,6 +4,28 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-08-01
+
+### Added
+
+- **The README opens with a banner**, in the real GBTI type stack: Baloo Da 2 for display, JetBrains
+  Mono for the command, the mint mark, and the extension's own glyph in the icon's colours.
+- `scripts/banner.html` and `scripts/capture-banner.mjs` build it. Four banner drafts had been sitting
+  in the published assets directory since 0.4.0, carried in by a wide `git add`, referenced by
+  nothing and backed by no source, which meant correcting a single word in one of them meant redrawing
+  it. The chosen design now has a generator like every other image here, and the drafts have moved out
+  of the directory the marketplace resolves against. A note claiming the brand faces could not be used
+  because they ship as woff2 only is gone with them: a browser decodes woff2, and the banner is
+  rendered in one.
+
+### Removed
+
+- **The restore section**, down to one sentence in *Session profiles*. What survived the 0.4.3 trim
+  was still three sentences of mechanism (`persistentSessionReviveProcess`, what a revived tab
+  actually contains, pid comparison) in a document whose reader wants to know that terminals come
+  back, not how. The behaviour is unchanged, it is still named in the opening summary, the Commands
+  table and the Settings table, and the full explanation is in the 0.2.0 entry below.
+
 ## [0.4.3] - 2026-08-01
 
 ### Changed

@@ -7,6 +7,7 @@
 .github/**
 .git/**
 .idea/**
+.playwright-mcp/**
 src/**
 dist/**
 node_modules/**
@@ -22,3 +23,11 @@ CLAUDE.md
 **/*.ts
 **/*.map
 *.vsix
+# Anything dropped at the root by a capture or a screenshot tool. `.gitignore`
+# hides files this does not, so a stray image can be invisible in git status and
+# still ship: a 165 KB Playwright screenshot reached a package this way.
+/*.png
+/*.jpg
+/*.webp
+/*.mp4
+/*.mov
