@@ -11,6 +11,11 @@ out/
 # a path whose parent directory is excluded.
 .product/*
 !.product/public/
+# Video never belongs in git: masters run to hundreds of MB and the marketplace
+# strips <video> anyway, so nothing references them from the repo.
+.product/public/**/*.mov
+.product/public/**/*.mp4
+.product/public/**/*.webm
 .env
 .env.*
 !.env.example

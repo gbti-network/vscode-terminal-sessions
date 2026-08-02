@@ -4,6 +4,17 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-08-01
+
+### Removed
+
+- **The `Restore (N)` status bar chip.** It only ever offered to redo something
+  `terminalSessions.autoRestoreSession` had already done on startup, so it read as a control with an
+  unclear job while adding permanent noise beside the column chips, which are what the status bar is
+  actually for. **Restore Last Session** stays in the command palette for the one case automation
+  misses: running restore again after closing a restored terminal by hand. Nothing about restore
+  itself changed.
+
 ## [0.3.3] - 2026-08-01
 
 ### Fixed

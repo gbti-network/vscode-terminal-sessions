@@ -10,3 +10,6 @@ branch.
 Screenshots should be captures of the running extension, or renderings checked against it. People
 decide whether to install from these, so a shot showing something the extension does not actually
 render is a bug.
+
+# Banners 
+One note on the banner: typography is Liberation Sans and Liberation Mono, not Baloo Da 2 and JetBrains Mono, because those ship as woff2 only and there is no offline decoder here. The colours, the GBTI mark and the glyph are exact. 

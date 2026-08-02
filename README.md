@@ -50,7 +50,7 @@ Out of the box, closing a VS Code **window** loses your terminals entirely. `ter
 
 Tabs are only half of it, though. A revived tab is a fresh **default-profile** shell with your old scrollback replayed into it: the name is right and the text looks familiar, but the shell is wrong and nothing is running. In testing, an `Alpha` tab that had been Ubuntu with `claude` in it came back as a bare `PS D:\...>` prompt.
 
-So the extension does the other half too. Launched profiles are remembered per workspace, and on startup each revived tab whose name matches a saved profile is disposed and relaunched as that profile, in the right shell, with its commands replayed. Automatic by default, or on demand from the **Restore** chip in the status bar.
+So the extension does the other half too. Launched profiles are remembered per workspace, and on startup each revived tab whose name matches a saved profile is disposed and relaunched as that profile, in the right shell, with its commands replayed. Automatic by default, governed by `terminalSessions.autoRestoreSession`. **Restore Last Session** in the palette re-runs it, for the one case automation misses: after closing a restored terminal by hand.
 
 A terminal whose process genuinely survived is left alone rather than replaced: the process id recorded at launch is compared against the one that came back, because the two cases are indistinguishable by name and getting it wrong would kill a live session.
 
@@ -80,7 +80,7 @@ On a host too old to have either command the chip is dropped entirely rather tha
 | Move Global Profiles into This Workspace | none |
 | Show Session Profiles View | none |
 | Save as Instance Profile | terminal right-click |
-| Restore Last Session | status-bar chip |
+| Restore Last Session | none |
 | Toggle Files / Editor / Terminal / Chat | `Ctrl+Alt+1` / `2` / `3` / `4` |
 | Show or Hide Column… | none |
 | Enable / Disable Column Layout | none |

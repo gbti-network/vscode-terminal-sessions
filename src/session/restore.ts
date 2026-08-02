@@ -34,7 +34,6 @@ interface SessionState {
  * checked rather than assumed.
  */
 export class SessionRestorer implements vscode.Disposable {
-  private readonly statusItem: vscode.StatusBarItem;
   private state: SessionState;
 
   constructor(private readonly context: vscode.ExtensionContext) {
@@ -43,15 +42,6 @@ export class SessionRestorer implements vscode.Disposable {
       context.workspaceState.get<SessionState>(LEGACY_KEY);
     this.state = stored?.version === 1 ? stored : { version: 1, launched: [] };
 
-    // Priority below the column chips (100/99/98) so it sits to their right.
-    this.statusItem = vscode.window.createStatusBarItem(
-      'terminalSessions.session.restore',
-      vscode.StatusBarAlignment.Left,
-      90,
-    );
-    this.statusItem.name = 'Terminal Sessions: Restore Session';
-    this.statusItem.command = 'terminalSessions.restoreSession';
-    this.refresh();
   }
 
   /** Record a profile launch, including its pid once the process exists. */
@@ -60,14 +50,12 @@ export class SessionRestorer implements vscode.Disposable {
     this.state.launched = this.state.launched.filter((entry) => entry.name !== profile.name);
     this.state.launched.push({ name: profile.name, pid });
     await this.flush();
-    this.refresh();
   }
 
   /** Forget a profile, so it is not restored next time. */
   async forget(name: string): Promise<void> {
     this.state.launched = this.state.launched.filter((entry) => entry.name !== name);
     await this.flush();
-    this.refresh();
   }
 
   get pending(): number {
@@ -109,28 +97,22 @@ export class SessionRestorer implements vscode.Disposable {
       relaunched.push(entry.name);
     }
 
-    this.refresh();
     return { relaunched, kept, missing };
-  }
-
-  private refresh(): void {
-    const count = this.state.launched.length;
-    if (count === 0) {
-      this.statusItem.hide();
-      return;
-    }
-    this.statusItem.text = `$(history) Restore (${count})`;
-    this.statusItem.tooltip = `Reopen ${count} saved session${count === 1 ? '' : 's'}: ${this.state.launched
-      .map((entry) => entry.name)
-      .join(', ')}`;
-    this.statusItem.show();
   }
 
   private flush(): Thenable<void> {
     return this.context.workspaceState.update(KEY, this.state);
   }
 
-  dispose(): void {
-    this.statusItem.dispose();
-  }
+  /**
+   * Nothing to tear down.
+   *
+   * There used to be a `Restore (N)` status bar chip here. It only ever offered
+   * to redo something `autoRestoreSession` had already done on startup, so it
+   * read as a control with an unclear job while adding permanent noise beside
+   * the column chips, which are the status bar's actual feature. Restore Last
+   * Session remains in the palette for the one case automation misses: running
+   * it again after closing a restored terminal by hand.
+   */
+  dispose(): void {}
 }
