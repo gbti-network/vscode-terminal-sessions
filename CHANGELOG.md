@@ -60,13 +60,23 @@ test suite that would have caught them.
   This is the exact case session restore goes to the trouble of detecting by process id and
   deliberately leaving alone. Replay is now gated on having asked VS Code to create that terminal.
 - **Opening a profile from the terminal `+` dropdown ran every command twice**, because a second
-  listener was registered per request and neither knew about the other. There is one replay path now.
+  listener was registered per request and neither knew about the other. There is one replay path now,
+  and it identifies the terminal by the request that produced it rather than by its name: VS Code
+  resolves a terminal's profile *after* `onDidOpenTerminal` fires, so the name can still be empty at
+  the moment the decision has to be made.
 - **Restore could dispose a live terminal.** It matched the first terminal of a given name while only
   the most recent process id was recorded, so with two same-named terminals the older, live one failed
   the check and was disposed. All name matches are considered, and a profile with no recorded process
   id is left alone rather than disposed on an absence of evidence.
 - **Restore had no re-entrancy guard**, so running it from the palette during the startup pass had two
   passes disposing and relaunching each other's terminals.
+- **Restore waits for VS Code to stop reviving terminals**, rather than for a fixed
+  `terminalSessions.restoreDelayMs`. That setting was a guess about a machine it cannot see, and when
+  the guess came in short the revived tabs arrived after the restore pass, leaving every tracked
+  profile with two. The delay is now a floor, and restore begins once no terminal has opened for a
+  moment, with a hard cap so a host that never settles still restores. Waiting longer is deliberate:
+  the alternative, disposing tabs that turn up late, would add another place that destroys a terminal
+  on circumstantial evidence.
 
 ### Fixed: the editor area disappearing at startup
 
@@ -105,10 +115,9 @@ test suite that would have caught them.
 
 ### Known and unfixed
 
-- `terminalSessions.restoreDelayMs` is still a fixed wait for VS Code's own terminal revival. If it
-  expires early you get a duplicate tab per profile, and nothing reconciles afterwards.
 - A mirrored non-WSL profile opens in the workspace root rather than its working directory. VS Code's
-  native terminal profile schema has no field for one.
+  native terminal profile schema has no field for one, so the same profile behaves differently
+  depending on whether it is opened from this extension or from the terminal `+` dropdown.
 
 ## [0.4.4] - 2026-08-01
 

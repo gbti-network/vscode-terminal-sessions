@@ -4,6 +4,7 @@ import { LayoutStore } from './state/store';
 import { getColumns } from './columns/registry';
 import { SessionRecorder } from './session/recorder';
 import { SessionRestorer } from './session/restore';
+import { policyFor, shouldKeepWaiting } from './core/restore-timing';
 import { draftFromTerminal, pickProfile } from './profiles/author';
 import { launchProfile, markHandled, replayCommands, wasHandled } from './profiles/launcher';
 import { ProfileMirror } from './profiles/mirror';
@@ -56,22 +57,34 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
    * terminal itself twice, because a second listener was registered per request
    * and neither knew about the other.
    *
-   * Entries expire because a request that is cancelled never produces a
-   * terminal, and a name left pending forever would replay into whatever opened
-   * with that name next.
+   * Deliberately keyed on nothing but arrival order. A terminal's name is not
+   * reliable at `onDidOpenTerminal`: VS Code resolves a terminal's profile after
+   * the event fires, so for a profile-launched terminal the name can still be
+   * empty, which is exactly the case this queue exists to serve. The request
+   * already knows which profile it is for, so the name is read from here rather
+   * than from the terminal.
+   *
+   * Entries expire because a cancelled request never produces a terminal, and one
+   * left pending forever would arm whatever opened next.
    */
-  const requested = new Map<string, number>();
+  const requested: Array<{ name: string; at: number }> = [];
   const REQUEST_TTL_MS = 60_000;
 
-  const claimRequest = (name: string): boolean => {
-    const at = requested.get(name);
-    requested.delete(name);
-    return at !== undefined && Date.now() - at < REQUEST_TTL_MS;
+  /** Take the oldest request still within its TTL, discarding stale ones. */
+  const claimRequest = (): string | undefined => {
+    const now = Date.now();
+    while (requested.length) {
+      const entry = requested.shift()!;
+      if (now - entry.at < REQUEST_TTL_MS) {
+        return entry.name;
+      }
+    }
+    return undefined;
   };
 
   context.subscriptions.push(
     registerSavedSessionProfile((name) => {
-      requested.set(name, Date.now());
+      requested.push({ name, at: Date.now() });
     }),
   );
 
@@ -93,10 +106,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // detecting by pid and deliberately leaving alone.
   context.subscriptions.push(
     vscode.window.onDidOpenTerminal(async (terminal) => {
-      if (wasHandled(terminal) || !claimRequest(terminal.name)) {
+      if (wasHandled(terminal)) {
         return;
       }
-      const profile = getProfiles().find((p) => p.name === terminal.name);
+      const name = claimRequest();
+      if (name === undefined) {
+        return;
+      }
+      const profile = getProfiles().find((p) => p.name === name);
       if (!profile) {
         return;
       }
@@ -347,13 +364,53 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 
   if (config.get<boolean>('autoRestoreSession', true)) {
-    // Wait for VS Code's own terminal revival to finish, otherwise the revived
-    // tabs appear *after* the restore pass and we would end up with duplicates.
-    const delay = config.get<number>('restoreDelayMs', 3000);
-    setTimeout(() => {
-      void vscode.commands.executeCommand('terminalSessions.restoreSession');
-    }, delay);
+    void waitForQuietThenRestore(context, config.get<number>('restoreDelayMs', 3000));
   }
+}
+
+/**
+ * Hold restore until VS Code has stopped reviving terminals of its own.
+ *
+ * `restoreDelayMs` alone was a fixed guess about a machine it cannot see. When
+ * the guess came in short, the revived tabs arrived *after* the restore pass and
+ * every tracked profile ended up with two, with nothing to reconcile them.
+ *
+ * So the delay is a floor now, and the actual trigger is the host going quiet.
+ * Waiting longer is the safe direction: the alternative, disposing tabs that
+ * turn up late, would add another place where a terminal is destroyed on
+ * circumstantial evidence, which is what this release exists to stop doing.
+ */
+async function waitForQuietThenRestore(
+  context: vscode.ExtensionContext,
+  configuredDelayMs: number,
+): Promise<void> {
+  const policy = policyFor(configuredDelayMs);
+  const startedAt = Date.now();
+  let lastTerminalAt: number | undefined;
+
+  const watcher = vscode.window.onDidOpenTerminal(() => {
+    lastTerminalAt = Date.now();
+  });
+  context.subscriptions.push(watcher);
+
+  try {
+    // Polled rather than driven off the event, so the cap is honoured even when
+    // no further terminal ever arrives to wake us.
+    const TICK_MS = 250;
+    while (
+      shouldKeepWaiting(
+        policy,
+        Date.now() - startedAt,
+        lastTerminalAt === undefined ? undefined : Date.now() - lastTerminalAt,
+      )
+    ) {
+      await new Promise((resolve) => setTimeout(resolve, TICK_MS));
+    }
+  } finally {
+    watcher.dispose();
+  }
+
+  await vscode.commands.executeCommand('terminalSessions.restoreSession');
 }
 
 /**
