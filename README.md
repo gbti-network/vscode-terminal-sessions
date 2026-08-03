@@ -1,5 +1,9 @@
 # Terminal Session Profiles
 
+[![VS Marketplace](https://vsmarketplacebadges.dev/version-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
+[![Installs](https://vsmarketplacebadges.dev/installs-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
+[![License](https://img.shields.io/badge/license-MIT-4ee39a)](LICENSE)
+
 Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
 
 [![Terminal Session Profiles: save terminals as profiles, restore and reprovision on restart](.product/public/demo-thumbnail.jpg)](https://youtu.be/eaAsh42seho)
@@ -13,6 +17,14 @@ ext install GBTI.gbti-terminal-sessions
 ```
 
 ![Every profile one click away: the Session Profiles view, with a profile launching claude --resume ClaudeCodeWorker1 in the terminal column](.product/public/01-profiles.png)
+
+## Built on VS Code's native terminal support
+
+VS Code already supports [persistent terminal sessions](https://code.visualstudio.com/docs/terminal/advanced), but its native features are spread across terminal profiles, tasks, settings, and workspace permissions.
+
+Terminal Session Profiles brings those pieces into one UI and adds reusable workspace or global profiles, ordered startup commands, automatic reprovisioning, and optional Claude session resume commands.
+
+VS Code remembers what was open. This extension remembers what should be opened.
 
 ## Session profiles
 

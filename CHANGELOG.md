@@ -4,6 +4,20 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.3] - 2026-08-03
+
+### Added
+
+- **A section explaining how this relates to VS Code's own terminal support**, linking to the
+  [advanced terminal docs](https://code.visualstudio.com/docs/terminal/advanced). VS Code has
+  persistent sessions already; what it does not have is one place to declare them. The listing never
+  answered the obvious question of why not just use the built-in features, and a reader deciding
+  whether to install should not have to work that out for themselves.
+
+### Changed
+
+- The badges are back.
+
 ## [0.5.2] - 2026-08-03
 
 ### Changed
