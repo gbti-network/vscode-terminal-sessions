@@ -34,29 +34,32 @@ A profile is a saved terminal setup: which shell to open, where, and what to run
 - **Editor.** All fields at once: name, shell, directory, and an ordered command list you can reorder and delete inline.
 - **Terminal `+` dropdown.** Tick *Show in the terminal `+` dropdown* and the profile is mirrored into `terminal.integrated.profiles`, appearing there by name. Commands still run, because the extension replays them whenever a terminal opens with a matching name.
 
-### Where profiles are saved
+Saved profiles come back on their own after a restart, in the right shell with their commands replayed. Automatic by default, governed by `terminalSessions.autoRestoreSession`.
 
-A profile is usually *about* a project: it names that project's directory and runs that project's commands. So by default a new profile is saved to the project's `.vscode/settings.json` and appears only there.
+## Workspace and global profiles
 
-- **Each profile carries its own scope**, set from the **Saved in** control in the profile editor. Change it there and the profile moves when you save.
-- The sidebar always shows this project's profiles **plus** any global ones, with the global ones marked, so it is obvious which follow you between projects.
-- **`terminalSessions.profileScope`** only seeds the scope a new profile starts at.
-- To move several at once, run **Move Global Profiles into This Workspace** from the palette.
-- A workspace profile shadows a global one of the same name, matching how settings behave elsewhere in VS Code.
+Profiles are saved to the current workspace by default, inside `.vscode/settings.json`. You can instead save a profile globally so it follows you between projects.
 
-Profiles mirrored into the terminal `+` dropdown are written at their own scope too, so a project's profile does not turn up in another project's dropdown.
+Use the **Saved in** control to move a profile between scopes. The sidebar shows both workspace and global profiles, with global profiles clearly marked.
 
-Commands run in order once shell integration reports ready. **Every command but the last is awaited**, so a long-lived process such as `claude` belongs last. They are stored and replayed **literally**: write `claude --resume ClaudeCodeWorker1` to reopen that exact session every time the profile launches, or `claude --continue` to rejoin whatever ran last in that directory.
+- A workspace profile overrides a global profile with the same name.
+- Profiles added to the terminal `+` menu retain their original scope.
+- To move several profiles at once, run **Move Global Profiles into This Workspace**.
+- `terminalSessions.profileScope` only controls where new profiles begin.
+
+## How commands run
+
+Commands run in order after shell integration is ready. Each command must finish before the next begins, while the final command may remain active.
+
+For example, place `claude --resume ClaudeCodeWorker1` last to reopen a specific Claude Code session, or use `claude --continue` to resume the most recent session in that directory.
 
 ![Every field at once: the profile editor with name, shell, working directory and an ordered command list](.product/public/02-editor.png)
 
-Saved profiles come back on their own after a restart, in the right shell with their commands replayed. Automatic by default, governed by `terminalSessions.autoRestoreSession`.
+## Column layout
 
-## Columns
+Show or hide the Explorer, editor, terminal, and chat from status-bar controls. The layout is remembered per workspace and uses VS Code's native panes, preserving terminal lists and Claude or Codex chat.
 
-The Explorer, editor, terminal and chat panes can be shown and hidden from status-bar chips, with visibility remembered per workspace. These drive VS Code's **real containers** (the primary sidebar, the editor area, the panel, and the secondary sidebar) rather than recreating them, which is what keeps the terminal's right-hand terminal list and the genuine Claude and Codex chat shells.
-
-**One column always stays open.** The last visible chip refuses to hide, rather than leaving you with an empty window and nothing lit to get back from.
+One column always remains visible so the workspace cannot be left empty.
 
 ![Four columns, one keystroke each: Explorer, editor, terminal and chat with their status bar chips](.product/public/03-columns.png)
 

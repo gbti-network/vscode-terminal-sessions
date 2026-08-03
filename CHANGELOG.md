@@ -4,6 +4,18 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2026-08-03
+
+### Changed
+
+- **Profile storage and command execution are separate sections now.** *Where profiles are saved* was
+  explaining both under one heading, so the paragraph about scope and the paragraph about ordered
+  commands sat together for no reason other than having been written together. They are
+  **Workspace and global profiles** and **How commands run**.
+- **Columns** is **Column layout**, and describes what the controls do rather than which VS Code
+  containers they drive.
+- Restore moved up beside the profiles it restores, rather than trailing the command section.
+
 ## [0.5.4] - 2026-08-03
 
 ### Removed
