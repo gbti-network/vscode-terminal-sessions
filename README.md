@@ -6,6 +6,10 @@
 
 Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
 
+[![Terminal Session Profiles: save terminals as profiles, restore and reprovision on restart](.product/public/demo-thumbnail.jpg)](https://youtu.be/eaAsh42seho)
+
+**[Watch the two minute demo on YouTube](https://youtu.be/eaAsh42seho).** Silent, with on-screen captions.
+
 **[Install from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)**, or from Quick Open inside VS Code (`Ctrl+P`):
 
 ```

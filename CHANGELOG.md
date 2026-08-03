@@ -4,6 +4,15 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-08-03
+
+### Added
+
+- **A two minute demo**, linked from the top of the listing: a silent walkthrough with on-screen
+  captions at [youtu.be/eaAsh42seho](https://youtu.be/eaAsh42seho). The marketplace strips `<video>`
+  from a README, so it is a linked still rather than an embed, using the video's own thumbnail so the
+  two cannot drift apart.
+
 ## [0.5.0] - 2026-08-02
 
 An adversarial audit of the source raised 36 findings across six dimensions. Two were refuted; the

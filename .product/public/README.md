@@ -19,6 +19,12 @@ cannot be corrected without redrawing it, which is how four unusable banner draf
 | File | Source | Regenerate |
 |---|---|---|
 | `01-profiles.png`, `02-editor.png`, `03-columns.png` | `scripts/screenshots.html` | `node scripts/capture-screenshots.mjs` |
+| `demo-thumbnail.jpg` | `.product/video/thumbnail.html` | `node .product/video/shoot-thumbnail.mjs`, then copy `out/thumbnail.jpg` here |
+
+`demo-thumbnail.jpg` is the YouTube thumbnail, committed here because the README links it to the
+video and the marketplace strips `<video>` from a listing, so a linked still is the only way a demo
+reaches someone reading the page. It is a copy rather than a second design on purpose: two thumbnails
+for one video would drift.
 
 Only images the README actually links to belong in here. The banner is built by
 `scripts/banner.html` and `node scripts/capture-banner.mjs`, but the README does not use it, so its
