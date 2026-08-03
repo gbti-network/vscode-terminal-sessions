@@ -4,6 +4,18 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-08-03
+
+### Changed
+
+- **The listing is cut to what someone deciding whether to install needs.** Gone: the badges, the
+  build and publishing instructions, the rationale for declaring profiles rather than capturing them,
+  and the section explaining that the two halves of the extension are independent. All of it was
+  written for a contributor reading the repository, not for a reader on the marketplace, where the
+  version and install count are already in the page header and build steps are noise.
+- Everything removed is preserved in `CONTRIBUTING.md`, which `.vscodeignore` excludes, so it stays
+  available in the repository without shipping.
+
 ## [0.5.1] - 2026-08-03
 
 ### Added

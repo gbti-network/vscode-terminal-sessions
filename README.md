@@ -1,14 +1,10 @@
 # Terminal Session Profiles
 
-[![VS Marketplace](https://vsmarketplacebadges.dev/version-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
-[![Installs](https://vsmarketplacebadges.dev/installs-short/GBTI.gbti-terminal-sessions.svg)](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)
-[![License](https://img.shields.io/badge/license-MIT-4ee39a)](LICENSE)
-
 Save a terminal as a reusable **session profile** (which shell to open, where, and what to run once it is ready), then bring it back with one click after a restart. Also repositions the Explorer, terminal and chat panes as collapsible columns.
 
 [![Terminal Session Profiles: save terminals as profiles, restore and reprovision on restart](.product/public/demo-thumbnail.jpg)](https://youtu.be/eaAsh42seho)
 
-**[Watch the two minute demo on YouTube](https://youtu.be/eaAsh42seho).** Silent, with on-screen captions.
+**[Watch the two minute demo on YouTube](https://youtu.be/eaAsh42seho).**
 
 **[Install from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=GBTI.gbti-terminal-sessions)**, or from Quick Open inside VS Code (`Ctrl+P`):
 
@@ -99,55 +95,6 @@ Open the palette with `Ctrl+Shift+P` and type `Terminal Sessions` to see all of 
 | `terminalSessions.layout.autoEnableEverywhere` | `true` | Bring the column layout up in every workspace. |
 | `terminalSessions.layout.autoEnable` | `true` | Bring it back on startup where it was already on. |
 | `terminalSessions.columns` | built-in | Which containers the chips control. |
-
-### The two halves are independent
-
-Session profiles and the column layout share an extension, not a switch. **Enable / Disable Column Layout** governs the columns and nothing else: profiles, replay and session restore keep working with the layout off, driven only by `terminalSessions.autoRestoreSession` and the profiles you have saved. There is deliberately no master on/off. Turning the extension off is what the Extensions view is for.
-
-Disabling the layout sticks. It outranks `layout.autoEnableEverywhere`, so a workspace you turned it off in stays off across reloads rather than being re-enabled by the blanket default.
-
-While the layout is enabled, four settings are managed at **global** scope and restored on disable: `terminal.integrated.defaultLocation`, `workbench.panel.defaultLocation`, `terminal.integrated.persistentSessionReviveProcess` (widened to `onExitAndWindowClose`, without which terminals are lost when a window closes rather than the whole application), and `workbench.panel.opensMaximized` (pinned to `never`, because its default reopens the panel maximized if it was maximized when last closed, which would hide the editor column with no chip click and from runtime state no API can read).
-
-## Why profiles are declared rather than captured
-
-The obvious design is to right-click a terminal and save what it is doing. That is not possible, for two independent reasons:
-
-- `Terminal.creationOptions` comes back **empty** for terminals VS Code launched from a profile, so the shell cannot be read back.
-- Shell integration is **blind to nested shells**. With `claude` running inside `wsl` inside PowerShell, no shell-execution event ever fires for it.
-
-At the moment of the right-click there is genuinely nothing to read, so a profile is declared once and replayed thereafter.
-
-## Development
-
-```bash
-npm install
-npm run watch     # then F5 to launch the Extension Development Host
-npm run check-types
-npm test          # compiles, then node --test
-npm run package   # produces a .vsix
-```
-
-Every dependency is pure JavaScript and the build is plain `tsc`, deliberately: this repo lives on a Windows drive that may be driven from either Windows or WSL, and a single shared `node_modules` cannot hold a native binary that works for both. The npm scripts invoke `node ./node_modules/typescript/bin/tsc` directly rather than the `node_modules/.bin` shim, because a WSL `npm install` creates POSIX symlinks there instead of the `.cmd` shims Windows needs.
-
-Tests add no dependency either: `node --test` is built in. They run against `src/core/`, which imports nothing from `vscode` and holds the decisions worth asserting on, the scope arithmetic for saved profiles and the snapshot of settings the column layout overrides. Both are plain functions over values, and both are where this extension's worst defects have lived.
-
-### Publishing
-
-Published to the Visual Studio Marketplace as **`GBTI.gbti-terminal-sessions`**. Authenticate once with a
-[personal access token](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#get-a-personal-access-token)
-scoped to *Marketplace > Manage* for the `gbti-network` Azure DevOps organisation:
-
-```bash
-npx @vscode/vsce login GBTI
-
-npm run package          # build + verify the .vsix locally first
-npm run publish          # publish the current version
-npm run publish:patch    # or bump, tag and publish in one step
-npm run publish:openvsx  # Open VSX, for VSCodium and friends
-```
-
-Add the release notes to `CHANGELOG.md` before bumping. The marketplace renders it as the extension's
-*Changelog* tab. The icon at `media/icon.png` is generated from `media/terminal-sessions.svg`.
 
 ## License
 
