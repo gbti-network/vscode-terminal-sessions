@@ -86,6 +86,33 @@ off in stays off across reloads rather than being re-enabled by the blanket defa
 is tri-state for exactly this reason: "never decided" and "turned off on purpose" have to be told
 apart.
 
+## The editor and terminal share one lever
+
+Hiding the editor hands its space to the terminal column. That coupling comes from VS Code itself:
+`workbench.action.toggleEditorVisibility` is a one-line delegation to `toggleMaximizedPanel()`, so
+hiding the editor and maximizing the panel are the same operation.
+
+Two things follow, and both are load-bearing in `src/layout/engine.ts`:
+
+- The two columns move each other, and can never both be hidden. Hiding the editor reveals the
+  terminal column if it was closed, because the space has to go somewhere. Hiding the terminal while
+  the editor is hidden brings the editor back, since VS Code un-maximizes the panel on its way out,
+  and the editor chip lights up with it. `setHidden` carries both directions and pre-seeds `applied`
+  so the follow-up pass does not undo what the workbench already did.
+- The chip can show the wrong state. Hide the editor from VS Code's own **View > Appearance** menu and
+  the chip will not know, because the real state lives in a context key (`mainEditorAreaVisible`) that
+  extensions can set but never read. The other three chips share that blind spot when their containers
+  are closed by their own title-bar buttons. There is no API that reads container visibility, checked
+  against `@types/vscode` 1.125.0; the only signal available is `visible` on a view the extension owns
+  inside the container, which would mean contributing a permanently visible tab.
+
+On a host too old to have either command the editor column is dropped rather than shown doing nothing,
+which is what `editorColumnSupported()` resolves once at `init`.
+
+The editor has no absolute show command, only a toggle, so `apply()` may only touch it to make a
+change. That contract was violated by the empty `applied` cache on every activation, which is the
+critical defect fixed in 0.5.0. `seedApplied()` exists to hold it.
+
 ## Settings the layout takes over
 
 While the column layout is enabled, four settings are managed at **global** scope and restored when

@@ -60,17 +60,6 @@ The Explorer, editor, terminal and chat panes can be shown and hidden from statu
 
 ![Four columns, one keystroke each: Explorer, editor, terminal and chat with their status bar chips](.product/public/03-columns.png)
 
-### The editor and terminal share one lever
-
-Hiding the editor hands its space to the terminal column. That coupling comes from VS Code itself: `workbench.action.toggleEditorVisibility` is a one-line delegation to `toggleMaximizedPanel()`, so hiding the editor and maximizing the panel are the same operation.
-
-Two things follow, worth knowing before you bind a key to it:
-
-- The two columns move each other, and can never both be hidden. Hiding the editor reveals the terminal column if it was closed, because the space has to go somewhere. Hiding the terminal while the editor is hidden brings the editor back, since VS Code un-maximizes the panel on its way out, and the editor chip lights up with it.
-- The chip can show the wrong state. Hide the editor from VS Code's own **View > Appearance** menu and the chip will not know, because the real state lives in a context key (`mainEditorAreaVisible`) that extensions can set but never read. The other three chips share that blind spot when their containers are closed by their own title-bar buttons.
-
-On a host too old to have either command, the chip is dropped rather than shown doing nothing. `Reset Layout` puts everything back.
-
 ## Commands
 
 Open the palette with `Ctrl+Shift+P` and type `Terminal Sessions` to see all of them.

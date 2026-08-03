@@ -4,6 +4,16 @@ All notable changes to **Terminal Sessions** are documented here. The format fol
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-08-03
+
+### Removed
+
+- **The editor and terminal coupling explanation**, moved to `CONTRIBUTING.md`. It was an accurate
+  account of why `toggleEditorVisibility` and `toggleMaximizedPanel` are the same operation, which is
+  worth knowing if you are changing `src/layout/engine.ts` and irrelevant if you are deciding whether
+  to install. The Columns section keeps what a user acts on: the chips drive real containers, and one
+  column always stays open.
+
 ## [0.5.3] - 2026-08-03
 
 ### Added
